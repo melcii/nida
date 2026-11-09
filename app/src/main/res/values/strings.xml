@@ -119,7 +119,7 @@
     <string name="language">Language</string>
     <string name="lang_en" translatable="false">English</string>
     <string name="lang_tr" translatable="false">Türkçe</string>
-    <string name="credits">Prayer times are calculated on your phone, and Hijri dates follow the Umm al-Qura calendar. Town and city names come from GeoNames (CC BY 4.0) and are stored in the app. NİDÂ has no internet access and keeps no backups in the cloud: your location and places never leave this phone.</string>
+    <string name="credits">Prayer times are calculated on your phone, and Hijri dates follow the Umm al-Qura calendar. Town and city names come from GeoNames (CC BY 4.0) and are stored in the app. NİDÂ keeps no backups in the cloud, and it goes online only when you tap Update prayer times in Settings, to download times from AlAdhan.</string>
     <string name="tab_calendar">Calendar</string>
     <string name="prev_month">Previous month</string>
     <string name="next_month">Next month</string>
@@ -149,4 +149,37 @@
     <string name="days_ago">%d days ago</string>
     <string name="metres">%d m</string>
     <string name="kilometres">%s km</string>
+
+    <!-- Compact view -->
+    <string name="tab_compact">Compact</string>
+    <string name="fajr">Fajr</string>
+    <string name="ishraq">Ishrâq</string>
+    <string name="duha">Duha</string>
+    <string name="evvabin">Evvabin</string>
+    <string name="seher">Seher</string>
+    <string name="night_short">Night</string>
+    <string name="night_third_1">Night 1/3</string>
+    <string name="midnight_short">Midnight</string>
+    <string name="night_third_2">Night 2/3</string>
+    <string name="night_second">Second third of the night</string>
+    <string name="night_half_first">First half of the night</string>
+    <string name="night_half_second">Second half of the night</string>
+    <string name="seher_name">Seher, the last sixth of the night</string>
+    <string name="forbidden_short">Forbidden time</string>
+    <string name="compact_in">in %s</string>
+    <string name="compact_left">%s left</string>
+    <string name="compact_past">Passed</string>
+    <string name="compact_hint">Tap any part of the chart to see its times.</string>
+
+    <!-- Updating from AlAdhan -->
+    <string name="update_section">Prayer times</string>
+    <string name="update_title">Update prayer times</string>
+    <string name="update_never">Downloads the next 2 months from AlAdhan</string>
+    <string name="update_done">Updated %1$s · until %2$s</string>
+    <string name="update_action">Update</string>
+    <string name="update_running">Updating…</string>
+    <string name="update_failed">Couldn’t reach AlAdhan. Check your connection and try again.</string>
+    <string name="update_none">Add a city or allow location first.</string>
+    <string name="update_note">Only when you tap Update, NİDÂ sends each saved place’s rough coordinates (to about 1 km), with your method and Asr choice, to api.aladhan.com. Nothing else is sent. If you change the method or move, tap Update again; until then, times are calculated on the phone.</string>
+    <string name="source_online">AlAdhan</string>
 </resources>

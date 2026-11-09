@@ -111,6 +111,14 @@
                     android:text="@string/tab_simple" />
 
                 <TextView
+                    android:id="@+id/tabCompact"
+                    style="@style/Nida.Tab"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tab_compact" />
+
+                <TextView
                     android:id="@+id/tabDetailed"
                     style="@style/Nida.Tab"
                     android:layout_width="0dp"
@@ -192,6 +200,87 @@
                         android:layout_marginTop="10dp"
                         android:textColor="@color/muted"
                         android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Compact: the whole day on one timeline -->
+                <LinearLayout
+                    android:id="@+id/viewCompact"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/compactTimes"
+                        style="@style/Nida.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <app.nida.DayChart
+                        android:id="@+id/dayChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/compactDate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/compactHijri"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/muted"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Nida.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:paddingStart="20dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="20dp"
+                        android:paddingBottom="14dp">
+
+                        <TextView
+                            android:id="@+id/compactPick"
+                            style="@style/Nida.RowText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter_medium" />
+
+                        <TextView
+                            android:id="@+id/compactPickSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="@color/muted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/compactLegend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingMultiplier="1.3"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:textColor="@color/muted"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <!-- Detailed: every time, the forbidden times, and the night -->

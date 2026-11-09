@@ -7,4 +7,7 @@
     <color name="accent">#8FCBAE</color>
     <color name="accent_soft">#1B2923</color>
     <color name="hairline">#222826</color>
+    <color name="forbidden">#6B3A2F</color>
+    <color name="forbidden_ink">#E5A08E</color>
+    <color name="night">#1D2531</color>
 </resources>

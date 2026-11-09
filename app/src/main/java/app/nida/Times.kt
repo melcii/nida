@@ -17,6 +17,8 @@ class Day(
     val hijriDay: Int,
     val hijriMonth: Int,
     val hijriYear: Int,
+    /** True when the times came from AlAdhan rather than being calculated on the phone. */
+    val online: Boolean = false,
 ) {
     val imsak get() = t[IMSAK]
     val sunrise get() = t[SUNRISE]
@@ -40,18 +42,23 @@ class Schedule(
     private val lng: Double,
     private val method: Int,
     private val school: Int,
+    private val downloaded: Map<LocalDate, LongArray> = emptyMap(),
 ) {
     private val days = HashMap<LocalDate, Day>()
 
     @Synchronized
     fun day(date: LocalDate): Day = days.getOrPut(date) {
-        val a = PrayTimes.compute(date, lat, lng, method, school)
         val h = Hijri.of(date)
+        downloaded[date]?.let { return@getOrPut Day(date, it.copyOf(6), it[6], h[0], h[1], h[2], online = true) }
+        val a = PrayTimes.compute(date, lat, lng, method, school)
         Day(date, a.copyOf(6), a[6], h[0], h[1], h[2])
     }
 }
 
-/** Prayer times are calculated on the phone: no network, nothing about you leaves the device. */
+/**
+ * Prayer times are calculated on the phone. Days downloaded from AlAdhan (only when the user asks,
+ * see [Online]) are used instead while they match the current settings.
+ */
 object Times {
     private val memo = HashMap<String, Pair<String, Schedule>>()
 
@@ -62,13 +69,17 @@ object Times {
         val zone = place.zone(context)
         val key = "${place.lat},${place.lng}|$method|$school|$zone"
         memo[place.id]?.let { if (it.first == key) return it.second }
-        return Schedule(zone, place.lat, place.lng, method, school).also { memo[place.id] = key to it }
+        val downloaded = Online.days(context, place, zone, method, school)
+        return Schedule(zone, place.lat, place.lng, method, school, downloaded).also { memo[place.id] = key to it }
     }
 
     @Synchronized
     fun forget(id: String) {
         memo.remove(id)
     }
+
+    @Synchronized
+    fun forgetAll() = memo.clear()
 }
 
 /** The Islamic date for a day, by the Umm al-Qura calendar. */

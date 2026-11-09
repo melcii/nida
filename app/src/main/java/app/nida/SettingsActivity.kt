@@ -59,6 +59,7 @@ class SettingsActivity : Activity() {
             setOnClickListener { openExactAlarmSettings(this@SettingsActivity) }
         }
         findViewById<View>(R.id.exactDivider).visibility = findViewById<View>(R.id.exactRow).visibility
+        findViewById<View>(R.id.updateRow).setOnClickListener { update() }
 
         render()
         if (savedInstanceState == null) Motion.stagger(Motion.children(findViewById<ViewGroup>(R.id.page)), step = 60)
@@ -95,7 +96,44 @@ class SettingsActivity : Activity() {
             group.addView(row)
         }
         segment(listOf(R.id.asrStandard to 0, R.id.asrHanafi to 1), Store.school(this))
+        renderUpdate()
         segment(listOf(R.id.langEn to Lang.EN, R.id.langTr to Lang.TR), Lang.current(this))
+    }
+
+    private var updating = false
+    private var updateFailed = false
+
+    /** The update row: when the shown place was last downloaded, or why it couldn't be. */
+    private fun renderUpdate() {
+        val sub = findViewById<TextView>(R.id.updateSub)
+        val place = Places.selected(this)
+        val coverage = place?.let { Online.coverage(this, it) }
+        sub.text = when {
+            updateFailed -> getString(R.string.update_failed)
+            place == null -> getString(R.string.update_none)
+            coverage != null -> getString(R.string.update_done, Fmt.ago(this, coverage.at),
+                java.time.format.DateTimeFormatter.ofPattern("d MMM", java.util.Locale(Lang.current(this))).format(coverage.until))
+            else -> getString(R.string.update_never)
+        }
+        sub.setTextColor(getColor(if (updateFailed) R.color.ink else R.color.muted))
+        findViewById<TextView>(R.id.updateState).setText(if (updating) R.string.update_running else R.string.update_action)
+        findViewById<View>(R.id.updateRow).isEnabled = !updating && place != null
+    }
+
+    private fun update() {
+        if (updating) return
+        updating = true
+        updateFailed = false
+        renderUpdate()
+        Refresh.run {
+            val ok = runCatching { Online.update(applicationContext) }.isSuccess
+            Refresh.post {
+                updating = false
+                updateFailed = !ok
+                NidaWidget.refreshAll(applicationContext)
+                if (!isDestroyed) renderUpdate()
+            }
+        }
     }
 
     private val Int.dp get() = (this * resources.displayMetrics.density).toInt()

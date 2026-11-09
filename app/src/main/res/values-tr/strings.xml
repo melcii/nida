@@ -116,7 +116,7 @@
     <string name="widget_hint">Konumunu güncellemek için widget’taki şehre dokun. NİDÂ’yı açmak için başka bir yere dokun.</string>
 
     <string name="language">Dil</string>
-    <string name="credits">Namaz vakitleri telefonunda hesaplanır, hicri tarihler Ümmülkurâ takvimine göredir. Şehir ve kasaba adları GeoNames’ten (CC BY 4.0) gelir ve uygulamanın içindedir. NİDÂ’nın internet erişimi yoktur ve buluta yedek almaz: konumun ve yerlerin bu telefondan hiç çıkmaz.</string>
+    <string name="credits">Namaz vakitleri telefonunda hesaplanır, hicri tarihler Ümmülkurâ takvimine göredir. Şehir ve kasaba adları GeoNames’ten (CC BY 4.0) gelir ve uygulamanın içindedir. NİDÂ buluta yedek almaz ve yalnızca Ayarlar’da Namaz vakitlerini güncelle’ye dokunduğunda, AlAdhan’dan vakit indirmek için internete bağlanır.</string>
     <string name="tab_calendar">Takvim</string>
     <string name="prev_month">Önceki ay</string>
     <string name="next_month">Sonraki ay</string>
@@ -146,4 +146,37 @@
     <string name="days_ago">%d gün önce</string>
     <string name="metres">%d m</string>
     <string name="kilometres">%s km</string>
+
+    <!-- Kompakt görünüm -->
+    <string name="tab_compact">Kompakt</string>
+    <string name="fajr">Sabah</string>
+    <string name="ishraq">İşrak</string>
+    <string name="duha">Kuşluk</string>
+    <string name="evvabin">Evvabin</string>
+    <string name="seher">Seher</string>
+    <string name="night_short">Gece</string>
+    <string name="night_third_1">Gece 1/3</string>
+    <string name="midnight_short">Gece yarısı</string>
+    <string name="night_third_2">Gece 2/3</string>
+    <string name="night_second">Gecenin ikinci üçte biri</string>
+    <string name="night_half_first">Gecenin ilk yarısı</string>
+    <string name="night_half_second">Gecenin ikinci yarısı</string>
+    <string name="seher_name">Seher, gecenin son altıda biri</string>
+    <string name="forbidden_short">Kerahat vakti</string>
+    <string name="compact_in">%s sonra</string>
+    <string name="compact_left">%s kaldı</string>
+    <string name="compact_past">Geçti</string>
+    <string name="compact_hint">Vakitlerini görmek için grafikte bir bölüme dokunun.</string>
+
+    <!-- AlAdhan'dan güncelleme -->
+    <string name="update_section">Namaz vakitleri</string>
+    <string name="update_title">Namaz vakitlerini güncelle</string>
+    <string name="update_never">Önümüzdeki 2 ayı AlAdhan’dan indirir</string>
+    <string name="update_done">%1$s güncellendi · %2$s tarihine kadar</string>
+    <string name="update_action">Güncelle</string>
+    <string name="update_running">Güncelleniyor…</string>
+    <string name="update_failed">AlAdhan’a ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="update_none">Önce bir şehir ekleyin veya konuma izin verin.</string>
+    <string name="update_note">NİDÂ yalnızca Güncelle’ye dokunduğunuzda, kayıtlı her yerin yaklaşık koordinatlarını (1 km kadar) hesaplama yönteminiz ve ikindi seçiminizle birlikte api.aladhan.com’a gönderir. Başka hiçbir şey gönderilmez. Yöntemi değiştirir veya yer değiştirirseniz tekrar Güncelle’ye dokunun; o zamana kadar vakitler telefonda hesaplanır.</string>
+    <string name="source_online">AlAdhan</string>
 </resources>

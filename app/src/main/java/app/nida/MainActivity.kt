@@ -51,10 +51,10 @@ class MainActivity : Activity(), SensorEventListener {
     private var wasFacing = false
 
     private val tabViews by lazy {
-        listOf<View>(find(R.id.viewSimple), find(R.id.viewDetailed), find(R.id.viewQibla), find(R.id.viewCalendar))
+        listOf<View>(find(R.id.viewSimple), find(R.id.viewDetailed), find(R.id.viewQibla), find(R.id.viewCalendar), find(R.id.viewCompact))
     }
     private val tabButtons by lazy {
-        listOf<TextView>(find(R.id.tabSimple), find(R.id.tabDetailed), find(R.id.tabQibla), find(R.id.tabCalendar))
+        listOf<TextView>(find(R.id.tabSimple), find(R.id.tabDetailed), find(R.id.tabQibla), find(R.id.tabCalendar), find(R.id.tabCompact))
     }
 
     // Location and compass health, for the Qibla tab.
@@ -66,6 +66,9 @@ class MainActivity : Activity(), SensorEventListener {
     private val month by lazy { MonthView(this, find(R.id.monthGrid)) { pickDay(it) } }
     private var shownMonth: YearMonth? = null
     private var pickedDay: LocalDate? = null
+
+    // Compact tab: the picked block, kept across the minute redraws.
+    private var compactPick: Pair<Long, Int>? = null
 
     private fun <T : View> find(id: Int): T = findViewById(id)
 
@@ -107,6 +110,10 @@ class MainActivity : Activity(), SensorEventListener {
         find<View>(R.id.nextMonth).setOnClickListener { shownMonth = shownMonth?.plusMonths(1); renderCalendar() }
         tabButtons.forEachIndexed { i, b -> b.setOnClickListener { showTab(i, animate = true) } }
 
+        find<DayChart>(R.id.dayChart).onPick = { p ->
+            compactPick = p.from to p.row
+            showPick(p)
+        }
         find<NightBar>(R.id.nightBar).marks = floatArrayOf(1 / 3f, 0.5f, 2 / 3f)
         showTab(tab, animate = false)
         render()
@@ -226,8 +233,10 @@ class MainActivity : Activity(), SensorEventListener {
             if (hijriDay !== m.day) getString(R.string.hijri_from_maghrib, it) else it
         }
         find<TextView>(R.id.gregorian).text = Fmt.date(this, m.today)
+        if (m.day!!.online) find<TextView>(R.id.footer).append(" · " + getString(R.string.source_online))
         renderSimple(m)
         renderDetailed(m)
+        renderCompact(schedule, m.now)
         renderCalendar()
     }
 
@@ -293,6 +302,158 @@ class MainActivity : Activity(), SensorEventListener {
                 Fmt.time(this, from, zone) + " – " + Fmt.time(this, to, zone),
                 if (now) getString(R.string.now) else null, now, to <= m.now)
         }
+    }
+
+    // ---- compact ----------------------------------------------------------------------------
+
+    private var compactZone: ZoneId = ZoneId.systemDefault()
+    private var compactNow = 0L
+
+    /**
+     * The whole day on one timeline, from just before Fajr to just before the next Fajr.
+     * Until half an hour before Fajr, the night still belongs to yesterday's chart.
+     */
+    private fun renderCompact(s: Schedule, now: Long) {
+        val zone = s.zone
+        val today = Moment(s, now)
+        val date = if (now < today.day!!.imsak - LEAD) today.today.minusDays(1) else today.today
+        val d = s.day(date)
+        val prev = s.day(date.minusDays(1))
+        val next = s.day(date.plusDays(1))
+        val dm = Moment(s, d.imsak)
+        val start = d.imsak - LEAD
+        val end = next.imsak + LEAD
+        val (rise, zenith, set) = dm.forbidden
+        val ishraq = rise.second
+        val duha = ishraq + 20 * Moment.MIN
+        val names = resources.getStringArray(R.array.prayers)
+        val fajr = getString(R.string.fajr)
+        val avoid = getString(R.string.forbidden_short)
+
+        // The day line: each part runs until the next one starts.
+        class Mark(val label: String, val name: String, val kind: Int, val at: Long, val low: Boolean = false)
+        val marks = listOf(
+            Mark(names[Day.ISHA], names[Day.ISHA], DayChart.PRAYER, prev.t[Day.ISHA], low = true),
+            Mark(fajr, fajr, DayChart.PRAYER, d.imsak),
+            Mark(avoid, getString(R.string.forbidden_sunrise), DayChart.FORBIDDEN, rise.first),
+            Mark(getString(R.string.ishraq), getString(R.string.ishraq), DayChart.PRAYER, ishraq),
+            Mark(getString(R.string.duha), getString(R.string.duha), DayChart.PRAYER, duha),
+            Mark(avoid, getString(R.string.forbidden_zenith), DayChart.FORBIDDEN, zenith.first),
+            Mark(names[Day.DHUHR], names[Day.DHUHR], DayChart.PRAYER, d.dhuhr),
+            Mark(names[Day.ASR], names[Day.ASR], DayChart.PRAYER, d.t[Day.ASR]),
+            Mark(avoid, getString(R.string.forbidden_sunset), DayChart.FORBIDDEN, set.first),
+            Mark(names[Day.MAGHRIB], names[Day.MAGHRIB], DayChart.PRAYER, d.maghrib, low = true),
+            Mark(names[Day.ISHA], names[Day.ISHA], DayChart.PRAYER, d.t[Day.ISHA], low = true),
+            Mark(fajr, fajr, DayChart.PRAYER, next.imsak),
+        )
+        val parts = mutableListOf<DayChart.Part>()
+        var at = Long.MIN_VALUE
+        marks.forEachIndexed { i, mk ->
+            val from = maxOf(mk.at, at)
+            val to = if (i + 1 < marks.size) marks[i + 1].at else next.sunrise
+            if (to > from) parts += DayChart.Part(mk.label, mk.name, from, to, mk.kind, low = mk.low)
+            at = maxOf(at, to)
+        }
+
+        // The night rows, for last night's end and tonight: whole, in thirds, in halves with Seher.
+        val nightLabel = getString(R.string.night_short)
+        for ((ns, ne) in listOf(prev.maghrib to d.imsak, d.maghrib to next.imsak)) {
+            fun f(x: Double) = ns + ((ne - ns) * x).toLong()
+            parts += DayChart.Part(nightLabel, getString(R.string.night), ns, ne, DayChart.NIGHT, row = 1)
+            parts += DayChart.Part("1/3", getString(R.string.night_first), ns, f(1 / 3.0), DayChart.NIGHT, row = 2)
+            parts += DayChart.Part("2/3", getString(R.string.night_second), f(1 / 3.0), f(2 / 3.0), DayChart.NIGHT, row = 2, alt = true)
+            parts += DayChart.Part("3/3", getString(R.string.night_last), f(2 / 3.0), ne, DayChart.NIGHT, row = 2)
+            parts += DayChart.Part("1/2", getString(R.string.night_half_first), ns, f(0.5), DayChart.NIGHT, row = 3)
+            parts += DayChart.Part("2/2", getString(R.string.night_half_second), f(0.5), f(5 / 6.0), DayChart.NIGHT, row = 3, alt = true)
+            parts += DayChart.Part(getString(R.string.seher), getString(R.string.seher_name), f(5 / 6.0), ne, DayChart.NIGHT, row = 3)
+        }
+        val shown = parts.filter { it.to > start && it.from < end }
+        val current = shown.firstOrNull { it.row == 0 && now >= it.from && now < it.to }
+
+        val chart = find<DayChart>(R.id.dayChart)
+        chart.show(shown, start, end, now, zone, current?.let { if (it.kind == DayChart.FORBIDDEN) avoid else it.label }.orEmpty(),
+            android.text.format.DateFormat.is24HourFormat(this))
+        compactZone = zone
+        compactNow = now
+        val pick = compactPick?.let { (from, row) -> shown.firstOrNull { it.from == from && it.row == row } } ?: current
+        chart.picked = pick
+        pick?.let { showPick(it) }
+
+        // The times themselves: the six, then the extra ones of the day, then the night.
+        fun f(x: Double) = d.maghrib + ((next.imsak - d.maghrib) * x).toLong()
+        val rows = listOf(
+            (0..5).map { names[it] to d.t[it] },
+            listOf(getString(R.string.ishraq) to ishraq, getString(R.string.duha) to duha, getString(R.string.evvabin) to d.maghrib),
+            listOf(getString(R.string.night_third_1) to f(1 / 3.0), getString(R.string.midnight_short) to f(0.5),
+                getString(R.string.night_third_2) to f(2 / 3.0), getString(R.string.seher) to f(5 / 6.0)),
+        )
+        val upcoming = rows.flatten().map { it.second }.filter { it > now }.minOrNull()
+        val group = find<LinearLayout>(R.id.compactTimes)
+        group.removeAllViews()
+        rows.forEach { cellRow(group, it, zone, now, upcoming) }
+
+        find<TextView>(R.id.compactDate).text = Fmt.date(this, date)
+        find<TextView>(R.id.compactHijri).text = Fmt.hijri(this, d)
+        find<TextView>(R.id.compactLegend).text = android.text.SpannableStringBuilder().apply {
+            fun dot(color: Int) {
+                val at = length
+                append("●  ")
+                setSpan(android.text.style.ForegroundColorSpan(getColor(color)), at, at + 1, 0)
+            }
+            dot(R.color.forbidden_ink); append(getString(R.string.forbidden)); append("     ")
+            dot(R.color.night); append(getString(R.string.night)); append("\n")
+            append(getString(R.string.compact_hint))
+        }
+    }
+
+    private fun showPick(p: DayChart.Part) {
+        val now = compactNow
+        find<TextView>(R.id.compactPick).text = p.name
+        val range = Fmt.time(this, p.from, compactZone) + " – " + Fmt.time(this, p.to, compactZone)
+        val state = when {
+            now < p.from -> getString(R.string.compact_in, Fmt.left(this, p.from - now))
+            now < p.to -> getString(R.string.compact_left, Fmt.left(this, p.to - now))
+            else -> getString(R.string.compact_past)
+        }
+        find<TextView>(R.id.compactPickSub).text = "$range · $state"
+        find<View>(R.id.dayChart).contentDescription = "${p.name}, $range, $state"
+    }
+
+    /** A row of equal cells, each a name over a time; the next one in the accent color. */
+    private fun cellRow(group: LinearLayout, cells: List<Pair<String, Long>>, zone: ZoneId, now: Long, upcoming: Long?) {
+        if (group.childCount > 0) group.addView(View(this).apply {
+            setBackgroundColor(getColor(R.color.hairline))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply {
+                marginStart = dp(16); marginEnd = dp(16)
+            }
+        })
+        val medium = resources.getFont(R.font.inter_medium)
+        val row = LinearLayout(this).apply { setPadding(dp(4), dp(10), dp(4), dp(10)) }
+        cells.forEach { (label, at) ->
+            val next = at == upcoming
+            val cell = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER_HORIZONTAL
+            }
+            cell.addView(TextView(this).apply {
+                text = label
+                gravity = android.view.Gravity.CENTER
+                textSize = 11f
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setTextColor(getColor(if (next) R.color.accent else R.color.muted))
+            })
+            cell.addView(TextView(this).apply {
+                text = Fmt.time(this@MainActivity, at, zone, short = true)
+                gravity = android.view.Gravity.CENTER
+                textSize = 16f
+                typeface = medium
+                setPadding(0, dp(2), 0, 0)
+                setTextColor(getColor(when { next -> R.color.accent; at <= now -> R.color.muted; else -> R.color.ink }))
+            })
+            row.addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        group.addView(row)
     }
 
     /** One line of a times list: a dot for the next one, muted once it has passed. */
@@ -604,6 +765,8 @@ class MainActivity : Activity(), SensorEventListener {
         const val DETAILED = 1
         const val QIBLA = 2
         const val CALENDAR = 3
+        const val COMPACT = 4
+        private const val LEAD = 30 * Moment.MIN
         private const val OLD_FIX = 6 * 3_600_000L
         private const val ROUGH_FIX = 5_000f
     }
