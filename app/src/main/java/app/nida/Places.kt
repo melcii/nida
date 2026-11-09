@@ -3,17 +3,38 @@ package app.nida
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.ZoneId
 
-/** A place to show times for: where you are now, or a city you added. */
-data class Place(val id: String, val name: String, val detail: String, val lat: Double, val lng: Double) {
+/**
+ * A place to show times for: where you are now, or a city you added.
+ * For where you are, [accuracy] (metres) and [fixedAt] describe the last location fix.
+ */
+data class Place(
+    val id: String,
+    val name: String,
+    val detail: String,
+    val lat: Double,
+    val lng: Double,
+    val tz: String = "",
+    val accuracy: Float = 0f,
+    val fixedAt: Long = 0,
+) {
     val isHere get() = id == Places.HERE
 
-    fun toJson(): JSONObject =
-        JSONObject().put("id", id).put("name", name).put("detail", detail).put("lat", lat).put("lng", lng)
+    /** The place's own time zone (from the built-in city list), so times are right even if the phone's clock zone isn't. */
+    fun zone(context: Context): ZoneId = when {
+        tz.isNotEmpty() -> runCatching { ZoneId.of(tz) }.getOrDefault(ZoneId.systemDefault())
+        else -> Cities.nearest(context, lat, lng)?.zone ?: ZoneId.systemDefault()
+    }
+
+    fun toJson(): JSONObject = JSONObject().put("id", id).put("name", name).put("detail", detail)
+        .put("lat", lat).put("lng", lng).put("tz", tz).put("acc", accuracy.toDouble()).put("at", fixedAt)
 
     companion object {
-        fun from(o: JSONObject) =
-            Place(o.getString("id"), o.optString("name"), o.optString("detail"), o.getDouble("lat"), o.getDouble("lng"))
+        fun from(o: JSONObject) = Place(
+            o.getString("id"), o.optString("name"), o.optString("detail"), o.getDouble("lat"), o.getDouble("lng"),
+            o.optString("tz"), o.optDouble("acc", 0.0).toFloat(), o.optLong("at"),
+        )
     }
 }
 
@@ -47,7 +68,7 @@ object Places {
     fun remove(context: Context, id: String) {
         saveCities(context, cities(context).filter { it.id != id })
         if (selectedId(context) == id) select(context, HERE)
-        Times.forget(context, id)
+        Times.forget(id)
     }
 
     fun selectedId(context: Context): String = Store.prefs(context).getString(KEY_SELECTED, HERE) ?: HERE

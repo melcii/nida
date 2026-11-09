@@ -71,8 +71,15 @@ class WidgetStyleActivity : Activity() {
         listOf(R.id.textAuto to WidgetStyle.TEXT_AUTO, R.id.textLight to WidgetStyle.TEXT_LIGHT, R.id.textDark to WidgetStyle.TEXT_DARK)
             .forEach { (id, v) -> findViewById<View>(id).setOnClickListener { update(style.copy(text = v)) } }
 
+        findViewById<View>(R.id.exactLink).setOnClickListener { openExactAlarmSettings(this) }
         render()
         if (savedInstanceState == null) Motion.stagger(Motion.children(findViewById<ViewGroup>(R.id.page)), step = 60)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<View>(R.id.exactLink).visibility = if (NidaWidget.exact(this)) View.GONE else View.VISIBLE
+        NidaWidget.refreshAll(applicationContext)
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()

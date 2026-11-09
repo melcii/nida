@@ -36,6 +36,22 @@ object Fmt {
         return "${day.hijriDay} $month ${day.hijriYear}"
     }
 
+    /** "just now", "12 min ago", "3 h ago", "2 days ago". */
+    fun ago(context: Context, at: Long): String {
+        val minutes = ((System.currentTimeMillis() - at) / 60_000).coerceAtLeast(0)
+        return when {
+            minutes < 2 -> context.getString(R.string.just_now)
+            minutes < 60 -> context.getString(R.string.minutes_ago, minutes.toInt())
+            minutes < 48 * 60 -> context.getString(R.string.hours_ago, (minutes / 60).toInt())
+            else -> context.getString(R.string.days_ago, (minutes / 1440).toInt())
+        }
+    }
+
+    /** A location's accuracy: "15 m" or "2.4 km". */
+    fun distance(context: Context, metres: Float): String =
+        if (metres < 1000) context.getString(R.string.metres, metres.toInt().coerceAtLeast(1))
+        else context.getString(R.string.kilometres, String.format(locale(context), "%.1f", metres / 1000))
+
     fun date(context: Context, date: LocalDate): String =
         DateTimeFormatter.ofPattern("EEEE, d MMMM", locale(context)).format(date)
 }

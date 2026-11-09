@@ -104,7 +104,7 @@
 
                 <TextView
                     android:id="@+id/tabSimple"
-                    style="@style/Nida.Segment"
+                    style="@style/Nida.Tab"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -112,7 +112,7 @@
 
                 <TextView
                     android:id="@+id/tabDetailed"
-                    style="@style/Nida.Segment"
+                    style="@style/Nida.Tab"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -120,11 +120,19 @@
 
                 <TextView
                     android:id="@+id/tabQibla"
-                    style="@style/Nida.Segment"
+                    style="@style/Nida.Tab"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/tab_qibla" />
+
+                <TextView
+                    android:id="@+id/tabCalendar"
+                    style="@style/Nida.Tab"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tab_calendar" />
             </LinearLayout>
 
             <FrameLayout
@@ -341,6 +349,181 @@
                         android:lineSpacingMultiplier="1.3"
                         android:textColor="@color/muted"
                         android:textSize="13sp" />
+
+                    <!-- Compass calibration: a figure-8, shown when the compass is unsure or on request -->
+                    <LinearLayout
+                        android:id="@+id/calibCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/note_bg"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:padding="18dp"
+                        android:visibility="gone">
+
+                        <app.nida.Figure8
+                            android:layout_width="150dp"
+                            android:layout_height="70dp" />
+
+                        <TextView
+                            android:id="@+id/calibTitle"
+                            style="@style/Nida.RowText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/inter_medium" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:gravity="center"
+                            android:lineSpacingMultiplier="1.3"
+                            android:text="@string/calib_body"
+                            android:textColor="@color/muted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <!-- Where the location came from, and what to do if it's weak or off -->
+                    <LinearLayout
+                        android:id="@+id/locStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:paddingStart="14dp"
+                        android:paddingTop="12dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="8dp">
+
+                        <TextView
+                            android:id="@+id/locText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lineSpacingMultiplier="1.3"
+                            android:textColor="@color/muted"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/locAction"
+                            style="@style/Nida.Link"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/calibLink"
+                        style="@style/Nida.Link"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:text="@string/calib_link"
+                        android:textColor="@color/muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Calendar: any day's times -->
+                <LinearLayout
+                    android:id="@+id/viewCalendar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/card_bg"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingTop="12dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/prevMonth"
+                                style="@style/Nida.Icon"
+                                android:contentDescription="@string/prev_month"
+                                android:src="@drawable/ic_back" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/monthTitle"
+                                    style="@style/Nida.RowText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/inter_medium"
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/monthHijri"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:textColor="@color/accent"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/nextMonth"
+                                style="@style/Nida.Icon"
+                                android:contentDescription="@string/next_month"
+                                android:src="@drawable/ic_next" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/monthGrid"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/dayTitle"
+                        style="@style/Nida.RowText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:fontFamily="@font/inter_medium"
+                        android:paddingStart="4dp" />
+
+                    <TextView
+                        android:id="@+id/dayHijri"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:paddingStart="4dp"
+                        android:textColor="@color/accent"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:id="@+id/dayGroup"
+                        style="@style/Nida.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp" />
                 </LinearLayout>
 
                 <!-- No location yet -->

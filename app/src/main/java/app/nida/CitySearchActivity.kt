@@ -16,9 +16,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import java.net.URLEncoder
 
-/** Find a city by name (Open-Meteo's free geocoder) and add it to the places list. */
+/** Find a city by name in the built-in list (no online search) and add it to the places list. */
 class CitySearchActivity : Activity() {
     private val main = Handler(Looper.getMainLooper())
     private var generation = 0
@@ -58,25 +57,11 @@ class CitySearchActivity : Activity() {
     private fun search(text: String) {
         val ticket = ++generation
         if (text.length < 2) return show(emptyList(), null)
-        val lang = Lang.current(this)
         Refresh.run {
-            val result = runCatching {
-                val o = Net.json(
-                    "https://geocoding-api.open-meteo.com/v1/search?count=10&format=json&language=$lang&name=" +
-                        URLEncoder.encode(text, "UTF-8"),
-                )
-                val arr = o.optJSONArray("results")
-                (0 until (arr?.length() ?: 0)).map { i ->
-                    val r = arr!!.getJSONObject(i)
-                    val detail = listOf(r.optString("admin1"), r.optString("country"))
-                        .filter { it.isNotEmpty() && it != r.optString("name") }.joinToString(", ")
-                    Place("city-" + r.getLong("id"), r.getString("name"), detail, r.getDouble("latitude"), r.getDouble("longitude"))
-                }
-            }
+            val found = Cities.search(this, text).map { Cities.place(this, it) }
             main.post {
                 if (ticket != generation || isDestroyed) return@post
-                result.fold({ show(it, if (it.isEmpty()) getString(R.string.no_results) else null) },
-                    { show(emptyList(), getString(R.string.search_failed)) })
+                show(found, if (found.isEmpty()) getString(R.string.no_results) else null)
             }
         }
     }
@@ -107,7 +92,6 @@ class CitySearchActivity : Activity() {
     private fun pick(place: Place) {
         Places.add(this, place)
         Places.select(this, place.id)
-        Refresh.place(this, place)
         finish()
     }
 }

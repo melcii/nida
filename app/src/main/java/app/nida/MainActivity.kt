@@ -27,6 +27,8 @@ import android.widget.TextView
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
@@ -37,7 +39,6 @@ class MainActivity : Activity(), SensorEventListener {
     private val clock = Handler(Looper.getMainLooper())
     private var locating = false
     private var lastLocate = 0L
-    private var failed = false
     private var askedOnce = false
     private var drawerOpen = false
     private var resumed = false
@@ -49,8 +50,22 @@ class MainActivity : Activity(), SensorEventListener {
     private var declination = 0f
     private var wasFacing = false
 
-    private val tabViews by lazy { listOf<View>(find(R.id.viewSimple), find(R.id.viewDetailed), find(R.id.viewQibla)) }
-    private val tabButtons by lazy { listOf<TextView>(find(R.id.tabSimple), find(R.id.tabDetailed), find(R.id.tabQibla)) }
+    private val tabViews by lazy {
+        listOf<View>(find(R.id.viewSimple), find(R.id.viewDetailed), find(R.id.viewQibla), find(R.id.viewCalendar))
+    }
+    private val tabButtons by lazy {
+        listOf<TextView>(find(R.id.tabSimple), find(R.id.tabDetailed), find(R.id.tabQibla), find(R.id.tabCalendar))
+    }
+
+    // Location and compass health, for the Qibla tab.
+    private var gpsWeak = false
+    private var compassAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH
+    private var calibShown = false
+
+    // Calendar tab.
+    private val month by lazy { MonthView(this, find(R.id.monthGrid)) { pickDay(it) } }
+    private var shownMonth: YearMonth? = null
+    private var pickedDay: LocalDate? = null
 
     private fun <T : View> find(id: Int): T = findViewById(id)
 
@@ -84,7 +99,12 @@ class MainActivity : Activity(), SensorEventListener {
         }
         find<View>(R.id.allow).setOnClickListener { askForLocation() }
         find<View>(R.id.chooseCity).setOnClickListener { startActivity(Intent(this, CitySearchActivity::class.java)) }
-        find<View>(R.id.status).setOnClickListener { if (failed) refreshData(force = true) }
+        find<View>(R.id.calibLink).setOnClickListener {
+            calibShown = !calibShown
+            renderCalibration()
+        }
+        find<View>(R.id.prevMonth).setOnClickListener { shownMonth = shownMonth?.minusMonths(1); renderCalendar() }
+        find<View>(R.id.nextMonth).setOnClickListener { shownMonth = shownMonth?.plusMonths(1); renderCalendar() }
         tabButtons.forEachIndexed { i, b -> b.setOnClickListener { showTab(i, animate = true) } }
 
         find<NightBar>(R.id.nightBar).marks = floatArrayOf(1 / 3f, 0.5f, 2 / 3f)
@@ -126,25 +146,19 @@ class MainActivity : Activity(), SensorEventListener {
 
     // ---- data -------------------------------------------------------------------------------
 
+    /** Takes one location fix when showing where you are. Cities need nothing: their times are calculated. */
     private fun refreshData(force: Boolean = false) {
-        val place = Places.selected(this)
-        if (Places.selectedId(this) == Places.HERE || place == null) {
-            if (!Locator.granted(this) || locating) return
-            if (!force && System.currentTimeMillis() - lastLocate < 60_000 && !failed) return
-            locating = true
-            lastLocate = System.currentTimeMillis()
-            if (Places.here(this) == null) render()
-            Refresh.here(this, done = { ok ->
-                locating = false
-                failed = !ok
-                if (!isDestroyed) render()
-            })
-        } else {
-            Refresh.place(this, place) { ok ->
-                failed = !ok
-                if (!isDestroyed) render()
-            }
-        }
+        if (Places.selectedId(this) != Places.HERE && Places.selected(this) != null) return
+        if (!Locator.granted(this) || locating) return
+        if (!force && System.currentTimeMillis() - lastLocate < 60_000) return
+        locating = true
+        lastLocate = System.currentTimeMillis()
+        render()
+        Refresh.here(this, done = { fresh ->
+            locating = false
+            gpsWeak = !fresh && Locator.enabled(this)
+            if (!isDestroyed) render()
+        })
     }
 
     private fun askForLocation() {
@@ -193,7 +207,7 @@ class MainActivity : Activity(), SensorEventListener {
 
         find<TextView>(R.id.placeName).text = place.name.ifEmpty { getString(R.string.current_location) }
         val schedule = Times.get(this, place)
-        val zone = schedule?.zone ?: ZoneId.systemDefault()
+        val zone = schedule.zone
         find<TextView>(R.id.placeLabel).text = when {
             place.isHere -> getString(R.string.current_location)
             zone.rules.getOffset(java.time.Instant.now()) != ZoneId.systemDefault().rules.getOffset(java.time.Instant.now()) ->
@@ -203,14 +217,7 @@ class MainActivity : Activity(), SensorEventListener {
         }
 
         renderQibla(place)
-        val m = schedule?.let { Moment(it) }
-        if (m == null || !m.ready) {
-            find<TextView>(R.id.hijri).text = ""
-            find<TextView>(R.id.gregorian).text = ""
-            tabViews.forEachIndexed { i, v -> v.visibility = if (i == QIBLA && tab == QIBLA) View.VISIBLE else View.GONE }
-            setStatus(getString(if (failed) R.string.offline else R.string.loading))
-            return
-        }
+        val m = Moment(schedule)
         setStatus(null)
         tabViews.forEachIndexed { i, v -> if (i == tab) v.visibility = View.VISIBLE }
 
@@ -221,6 +228,7 @@ class MainActivity : Activity(), SensorEventListener {
         find<TextView>(R.id.gregorian).text = Fmt.date(this, m.today)
         renderSimple(m)
         renderDetailed(m)
+        renderCalendar()
     }
 
     private fun renderSimple(m: Moment) {
@@ -236,22 +244,9 @@ class MainActivity : Activity(), SensorEventListener {
     private fun renderDetailed(m: Moment) {
         val zone = m.schedule.zone
         val day = m.day!!
-        val inflater = LayoutInflater.from(this)
-        val ink = getColor(R.color.ink)
-        val muted = getColor(R.color.muted)
 
-        fun row(group: ViewGroup, name: String, time: String, note: String?, highlight: Boolean, past: Boolean) {
-            if (group.childCount > 0) group.addView(View(this).apply {
-                setBackgroundColor(getColor(R.color.hairline))
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply { marginStart = dp(38) }
-            })
-            val r = inflater.inflate(R.layout.row_time, group, false)
-            r.findViewById<View>(R.id.dot).visibility = if (highlight) View.VISIBLE else View.INVISIBLE
-            r.findViewById<TextView>(R.id.name).apply { text = name; setTextColor(if (past) muted else ink) }
-            r.findViewById<TextView>(R.id.time).apply { text = time; setTextColor(if (past) muted else ink) }
-            r.findViewById<TextView>(R.id.note).text = note.orEmpty()
-            group.addView(r)
-        }
+        fun row(group: ViewGroup, name: String, time: String, note: String?, highlight: Boolean, past: Boolean) =
+            timeRow(group, name, time, note, highlight, past)
 
         val times = find<LinearLayout>(R.id.timesGroup)
         times.removeAllViews()
@@ -300,6 +295,22 @@ class MainActivity : Activity(), SensorEventListener {
         }
     }
 
+    /** One line of a times list: a dot for the next one, muted once it has passed. */
+    private fun timeRow(group: ViewGroup, name: String, time: String, note: String?, highlight: Boolean, past: Boolean) {
+        val ink = getColor(R.color.ink)
+        val muted = getColor(R.color.muted)
+        if (group.childCount > 0) group.addView(View(this).apply {
+            setBackgroundColor(getColor(R.color.hairline))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply { marginStart = dp(38) }
+        })
+        val r = LayoutInflater.from(this).inflate(R.layout.row_time, group, false)
+        r.findViewById<View>(R.id.dot).visibility = if (highlight) View.VISIBLE else View.INVISIBLE
+        r.findViewById<TextView>(R.id.name).apply { text = name; setTextColor(if (past) muted else ink) }
+        r.findViewById<TextView>(R.id.time).apply { text = time; setTextColor(if (past) muted else ink) }
+        r.findViewById<TextView>(R.id.note).text = note.orEmpty()
+        group.addView(r)
+    }
+
     private fun renderQibla(place: Place) {
         val bearing = Qibla.bearing(place.lat, place.lng)
         val km = NumberFormat.getIntegerInstance(java.util.Locale(Lang.current(this))).format(Qibla.distanceToKaaba(place.lat, place.lng).roundToInt())
@@ -312,6 +323,107 @@ class MainActivity : Activity(), SensorEventListener {
         }
         declination = GeomagneticField(place.lat.toFloat(), place.lng.toFloat(), 0f, System.currentTimeMillis()).declination
         updateQiblaHint()
+        renderLocationStatus(place)
+        renderCalibration()
+    }
+
+    /** Says where the location came from, and what to do when GPS is weak, old or off. */
+    private fun renderLocationStatus(place: Place) {
+        val box = find<View>(R.id.locStatus)
+        val text = find<TextView>(R.id.locText)
+        val action = find<TextView>(R.id.locAction)
+        if (!place.isHere) return run { box.visibility = View.GONE }
+        box.visibility = View.VISIBLE
+        val age = System.currentTimeMillis() - place.fixedAt
+        val ago = Fmt.ago(this, place.fixedAt)
+        var warn = true
+        var act: Pair<Int, () -> Unit>? = null
+        text.text = when {
+            !Locator.granted(this) -> {
+                act = R.string.allow_location to { askForLocation() }
+                getString(R.string.loc_denied)
+            }
+            !Locator.enabled(this) -> {
+                act = R.string.loc_turn_on to { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+                getString(R.string.loc_off, ago)
+            }
+            locating -> {
+                warn = false
+                getString(R.string.loc_finding)
+            }
+            gpsWeak -> {
+                act = R.string.try_again to { refreshData(force = true) }
+                getString(R.string.loc_weak, ago)
+            }
+            age > OLD_FIX -> {
+                act = R.string.loc_update to { refreshData(force = true) }
+                getString(R.string.loc_old, ago)
+            }
+            place.accuracy > ROUGH_FIX -> {
+                act = R.string.loc_update to { refreshData(force = true) }
+                getString(R.string.loc_rough, Fmt.distance(this, place.accuracy))
+            }
+            else -> {
+                warn = false
+                getString(R.string.loc_good, Fmt.distance(this, place.accuracy), ago)
+            }
+        }
+        box.setBackgroundResource(if (warn) R.drawable.note_bg else 0)
+        text.setTextColor(getColor(if (warn) R.color.ink else R.color.muted))
+        action.visibility = if (act == null) View.GONE else View.VISIBLE
+        act?.let { (label, run) ->
+            action.setText(label)
+            action.setOnClickListener { run() }
+        }
+    }
+
+    /** The figure-8 card: shown when the compass reports low accuracy, or when asked for. */
+    private fun renderCalibration() {
+        val needed = rotationSensor != null && compassAccuracy <= SensorManager.SENSOR_STATUS_ACCURACY_LOW
+        val card = find<View>(R.id.calibCard)
+        val show = rotationSensor != null && (needed || calibShown)
+        if (show && card.visibility != View.VISIBLE) Motion.settle(card)
+        card.visibility = if (show) View.VISIBLE else View.GONE
+        find<TextView>(R.id.calibTitle).setText(if (needed) R.string.calib_needed else R.string.calib_title)
+        find<View>(R.id.calibLink).visibility = if (rotationSensor == null || needed) View.GONE else View.VISIBLE
+        find<TextView>(R.id.calibLink).setText(if (calibShown) R.string.calib_hide else R.string.calib_link)
+    }
+
+    // ---- calendar ---------------------------------------------------------------------------
+
+    private fun renderCalendar() {
+        val place = Places.selected(this) ?: return
+        val schedule = Times.get(this, place)
+        val today = LocalDate.now(schedule.zone)
+        val picked = pickedDay ?: today.also { pickedDay = it }
+        val shown = shownMonth ?: YearMonth.from(picked).also { shownMonth = it }
+        val locale = java.util.Locale(Lang.current(this))
+        find<TextView>(R.id.monthTitle).text =
+            java.time.format.DateTimeFormatter.ofPattern("LLLL yyyy", locale).format(shown).replaceFirstChar { it.titlecase(locale) }
+        val first = schedule.day(shown.atDay(1))
+        val last = schedule.day(shown.atEndOfMonth())
+        val months = resources.getStringArray(R.array.hijri_months)
+        find<TextView>(R.id.monthHijri).text = if (first.hijriMonth == last.hijriMonth) "${months[first.hijriMonth - 1]} ${first.hijriYear}"
+        else "${months[first.hijriMonth - 1]} – ${months[last.hijriMonth - 1]} ${last.hijriYear}"
+        month.show(shown, picked, today)
+
+        val day = schedule.day(picked)
+        find<TextView>(R.id.dayTitle).text = Fmt.date(this, picked)
+        find<TextView>(R.id.dayHijri).text = Fmt.hijri(this, day)
+        val group = find<LinearLayout>(R.id.dayGroup)
+        group.removeAllViews()
+        val now = System.currentTimeMillis()
+        val next = Moment(schedule, now).let { m -> if (m.nextIndex < 6) day.t.indexOf(m.nextAt) else -1 }
+        for (i in 0..5) {
+            timeRow(group, Fmt.prayer(this, i), Fmt.time(this, day.t[i], schedule.zone),
+                if (i == next) Fmt.left(this, day.t[i] - now) else null, i == next, picked == today && day.t[i] <= now)
+        }
+    }
+
+    private fun pickDay(date: LocalDate) {
+        pickedDay = date
+        renderCalendar()
+        Motion.stagger(listOf(find(R.id.dayTitle), find(R.id.dayHijri), find(R.id.dayGroup)), step = 40, rise = 6f)
     }
 
     private fun updateQiblaHint() {
@@ -364,6 +476,7 @@ class MainActivity : Activity(), SensorEventListener {
     private val orientation = FloatArray(3)
 
     override fun onSensorChanged(event: SensorEvent) {
+        if (event.accuracy != compassAccuracy) onAccuracyChanged(event.sensor, event.accuracy)
         SensorManager.getRotationMatrixFromVector(matrix, event.values)
         @Suppress("DEPRECATION")
         val rotation = if (Build.VERSION.SDK_INT >= 30) display?.rotation ?: 0 else windowManager.defaultDisplay.rotation
@@ -390,7 +503,19 @@ class MainActivity : Activity(), SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        val wasNeeded = compassAccuracy <= SensorManager.SENSOR_STATUS_ACCURACY_LOW
+        compassAccuracy = accuracy
+        if (wasNeeded && accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
+            // Calibrated: say so briefly, then tuck the card away.
+            calibShown = true
+            find<TextView>(R.id.calibTitle).setText(R.string.calib_done)
+            clock.postDelayed({ calibShown = false; renderCalibration() }, 2500)
+            find<View>(R.id.calibLink).visibility = View.GONE
+            return
+        }
+        renderCalibration()
+    }
 
     // ---- places drawer ----------------------------------------------------------------------
 
@@ -457,7 +582,6 @@ class MainActivity : Activity(), SensorEventListener {
             r.setOnClickListener {
                 Places.select(this, id)
                 closeDrawer()
-                failed = false
                 render()
                 refreshData(force = id == Places.HERE)
                 Motion.stagger(listOf(find(R.id.heading), find(R.id.stage)), step = 80, rise = 10f)
@@ -471,9 +595,7 @@ class MainActivity : Activity(), SensorEventListener {
 
     /** "Asr in 1h 2m" for a place whose times are cached, or where it is. */
     private fun nextLine(place: Place): String {
-        val s = Times.get(this, place) ?: return if (place.isHere) getString(R.string.current_location) else place.detail
-        val m = Moment(s)
-        if (!m.ready) return place.detail
+        val m = Moment(Times.get(this, place))
         return getString(R.string.widget_left, Fmt.prayer(this, m.next), Fmt.left(this, m.nextAt - m.now))
     }
 
@@ -481,5 +603,8 @@ class MainActivity : Activity(), SensorEventListener {
         const val SIMPLE = 0
         const val DETAILED = 1
         const val QIBLA = 2
+        const val CALENDAR = 3
+        private const val OLD_FIX = 6 * 3_600_000L
+        private const val ROUGH_FIX = 5_000f
     }
 }

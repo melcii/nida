@@ -84,6 +84,13 @@
         <item name="android:background">@drawable/segment_item</item>
     </style>
 
+    <style name="Nida.Tab" parent="Nida.Segment">
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+        <item name="android:textSize">12.5sp</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
     <style name="Nida.Card" parent="">
         <item name="android:background">@drawable/group_bg</item>
         <item name="android:orientation">vertical</item>

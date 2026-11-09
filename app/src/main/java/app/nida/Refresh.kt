@@ -5,48 +5,37 @@ import android.os.Handler
 import android.os.Looper
 import java.util.concurrent.Executors
 
-/** Brings location and times up to date, off the main thread. */
+/** Brings the location up to date, off the main thread. Everything stays on the phone. */
 object Refresh {
     private val io = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private const val MOVED_KM = 3.0
 
     /**
-     * Finds where we are once, names the city, and caches its times.
-     * [located] runs as soon as the fix is in; [done] after the times are ready (true) or unavailable.
+     * Finds where we are once and names the town from the built-in list.
+     * [located] runs as soon as the attempt ends; [done] gets whether a fresh fix came in.
      */
     fun here(context: Context, located: () -> Unit = {}, done: (Boolean) -> Unit = {}) {
         val app = context.applicationContext
-        Locator.current(context) { loc ->
+        Locator.current(context) { result ->
             located()
             io.execute {
+                val loc = result.location
                 if (loc != null) {
                     val old = Places.here(app)
-                    // A few metres of drift shouldn't refetch anything.
                     val moved = old == null || old.name.isEmpty() ||
                         Qibla.distanceKm(old.lat, old.lng, loc.latitude, loc.longitude) > MOVED_KM
-                    if (moved) {
-                        val name = Locator.cityName(app, loc.latitude, loc.longitude) ?: old?.name.orEmpty()
-                        Places.setHere(app, Place(Places.HERE, name, "", loc.latitude, loc.longitude))
-                    }
+                    // A few metres of drift keeps the old point, but the fix's accuracy and time are always fresh.
+                    val base = if (moved) {
+                        val city = Cities.nearest(app, loc.latitude, loc.longitude)
+                        Place(Places.HERE, city?.name ?: old?.name.orEmpty(), "", loc.latitude, loc.longitude, city?.tz.orEmpty())
+                    } else if (old!!.tz.isEmpty()) old.copy(tz = Cities.nearest(app, old.lat, old.lng)?.tz.orEmpty()) else old
+                    Places.setHere(app, base.copy(accuracy = loc.accuracy, fixedAt = loc.time))
                 }
-                val ok = Places.here(app)?.let { Times.ensure(app, it) } ?: false
                 main.post {
                     NidaWidget.refreshAll(app)
-                    done(ok)
+                    done(result.fresh)
                 }
-            }
-        }
-    }
-
-    /** Caches times for a place without touching location. */
-    fun place(context: Context, place: Place, done: (Boolean) -> Unit = {}) {
-        val app = context.applicationContext
-        io.execute {
-            val ok = Times.ensure(app, place)
-            main.post {
-                if (place.isHere) NidaWidget.refreshAll(app)
-                done(ok)
             }
         }
     }

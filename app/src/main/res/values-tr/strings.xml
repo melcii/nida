@@ -44,7 +44,6 @@
     <string name="add_city">Şehir ekle</string>
     <string name="search_hint">Şehir ara</string>
     <string name="no_results">Şehir bulunamadı</string>
-    <string name="search_failed">Şu an aranamıyor. Bağlantını kontrol et.</string>
     <string name="remove">Kaldır</string>
     <string name="local_time">Yerel saat %s</string>
 
@@ -79,11 +78,9 @@
     <string name="qibla_other_place">%s için kıble</string>
 
     <string name="location_title">Neredesin?</string>
-    <string name="location_body">NİDÂ, namaz vakitlerini ve kıbleyi bulmak için konumunu kullanır. Konuma yalnızca uygulamayı açtığında ya da widget’taki şehre dokunduğunda bakar.</string>
+    <string name="location_body">NİDÂ, namaz vakitlerini ve kıbleyi bulmak için konumunu kullanır. Konuma yalnızca uygulamayı açtığında ya da widget’taki şehre dokunduğunda bakar ve konumun telefonundan hiç çıkmaz.</string>
     <string name="allow_location">Konuma izin ver</string>
     <string name="choose_city">Bunun yerine şehir seç</string>
-    <string name="loading">Namaz vakitleri alınıyor…</string>
-    <string name="offline">Namaz vakitleri servisine ulaşılamadı. Bağlantını kontrol et.</string>
     <string name="locating">Konum bulunuyor…</string>
     <string name="try_again">Tekrar dene</string>
 
@@ -108,7 +105,6 @@
     <string name="add_widget">Ana ekrana widget ekle</string>
     <string name="widget_desc">Bugünün namaz vakitleri ve sıradaki vakte kalan süre.</string>
     <string name="widget_no_place">Konum için dokun</string>
-    <string name="widget_loading">Güncelleniyor…</string>
     <string name="background">Arka plan</string>
     <string name="opacity">Opaklık</string>
     <string name="opacity_value">%%%d</string>
@@ -120,5 +116,34 @@
     <string name="widget_hint">Konumunu güncellemek için widget’taki şehre dokun. NİDÂ’yı açmak için başka bir yere dokun.</string>
 
     <string name="language">Dil</string>
-    <string name="credits">Namaz vakitleri ve hicri tarihler AlAdhan API’sinden gelir. Şehir araması Open-Meteo ile yapılır. Konumun yalnızca NİDÂ’yı açtığında ya da widget’taki şehre dokunduğunda okunur ve sadece vakitleri ve şehir adını bulmak için bu servislere gönderilir.</string>
+    <string name="credits">Namaz vakitleri telefonunda hesaplanır, hicri tarihler Ümmülkurâ takvimine göredir. Şehir ve kasaba adları GeoNames’ten (CC BY 4.0) gelir ve uygulamanın içindedir. NİDÂ’nın internet erişimi yoktur ve buluta yedek almaz: konumun ve yerlerin bu telefondan hiç çıkmaz.</string>
+    <string name="tab_calendar">Takvim</string>
+    <string name="prev_month">Önceki ay</string>
+    <string name="next_month">Sonraki ay</string>
+    <string name="exact_title">Tam zamanlı geri sayım</string>
+    <string name="exact_sub">Widget’ı tam dakikasında günceller</string>
+    <string name="exact_on">Açık</string>
+    <string name="exact_off">İzin ver</string>
+    <string name="exact_ask">Geri sayımı dakikası dakikasına doğru yap</string>
+    <string name="loc_good">Konum %1$s hassasiyetle · %2$s</string>
+    <string name="loc_old">Konumun %s bulundu. Yer değiştirdiysen güncelle.</string>
+    <string name="loc_rough">Konumun kaba (%s hassasiyet). Yön yine yakın, ama GPS konumu daha iyi.</string>
+    <string name="loc_weak">GPS konumu alınamadı; sinyal zayıf olabilir. Son konumun kullanılıyor (%s). Pencere kenarında ya da dışarıda dene.</string>
+    <string name="loc_off">Telefonda konum kapalı. Son konumun kullanılıyor (%s).</string>
+    <string name="loc_turn_on">Konumu aç</string>
+    <string name="loc_denied">Konum izni yok, kıble kayıtlı bir yere göre gösteriliyor.</string>
+    <string name="loc_finding">Konumun bulunuyor…</string>
+    <string name="loc_update">Konumu güncelle</string>
+    <string name="calib_title">Pusulayı ayarla</string>
+    <string name="calib_needed">Pusulanın ayarlanması gerekiyor</string>
+    <string name="calib_done">Pusula ayarlandı</string>
+    <string name="calib_body">Telefonu havada birkaç kez 8 çizer gibi hareket ettir; metal ve mıknatıslardan uzak dur.</string>
+    <string name="calib_link">Pusula yanlış mı? Ayarla</string>
+    <string name="calib_hide">Ayarı gizle</string>
+    <string name="just_now">az önce</string>
+    <string name="minutes_ago">%d dk önce</string>
+    <string name="hours_ago">%d sa önce</string>
+    <string name="days_ago">%d gün önce</string>
+    <string name="metres">%d m</string>
+    <string name="kilometres">%s km</string>
 </resources>

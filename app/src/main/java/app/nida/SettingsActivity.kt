@@ -6,13 +6,22 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.LinearLayout
 import android.widget.TextView
+
+/** Opens the system page where the user allows exact alarms for this app. */
+fun openExactAlarmSettings(context: Context) {
+    if (Build.VERSION.SDK_INT >= 31) {
+        context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + context.packageName)))
+    }
+}
 
 /** Calculation method, Asr, widget style, and language. */
 class SettingsActivity : Activity() {
@@ -44,9 +53,25 @@ class SettingsActivity : Activity() {
             setOnClickListener { widgets.requestPinAppWidget(ComponentName(context, NidaWidget::class.java), null, null) }
         }
         findViewById<View>(R.id.addWidgetDivider).visibility = findViewById<View>(R.id.addWidgetRow).visibility
+        // Android 12+ asks the user before an app may set exact alarms; the widget uses them to tick on the minute.
+        findViewById<View>(R.id.exactRow).apply {
+            visibility = if (Build.VERSION.SDK_INT >= 31) View.VISIBLE else View.GONE
+            setOnClickListener { openExactAlarmSettings(this@SettingsActivity) }
+        }
+        findViewById<View>(R.id.exactDivider).visibility = findViewById<View>(R.id.exactRow).visibility
 
         render()
         if (savedInstanceState == null) Motion.stagger(Motion.children(findViewById<ViewGroup>(R.id.page)), step = 60)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val exact = NidaWidget.exact(this)
+        findViewById<TextView>(R.id.exactState).apply {
+            setText(if (exact) R.string.exact_on else R.string.exact_off)
+            setTextColor(getColor(if (exact) R.color.muted else R.color.accent))
+        }
+        NidaWidget.refreshAll(applicationContext)
     }
 
     private fun render() {
@@ -88,11 +113,9 @@ class SettingsActivity : Activity() {
         changed()
     }
 
-    /** The cached times no longer match; fetch new ones for where we last were. */
     private fun changed() {
         render()
         NidaWidget.refreshAll(applicationContext)
-        Places.here(this)?.let { Refresh.place(this, it) }
     }
 
     private fun switchLanguage(lang: String) {

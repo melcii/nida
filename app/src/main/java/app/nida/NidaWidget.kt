@@ -7,12 +7,13 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.RemoteViews
 
 /**
  * City, the six times, and the time left until the next one.
- * It redraws once a minute with a non-waking alarm, so it is idle while the screen is off,
- * and reads only cached times: no GPS, no network.
+ * It redraws at the start of every minute with a non-waking alarm, so it is idle while the
+ * screen is off. Times are calculated on the phone: no GPS, no network.
  */
 class NidaWidget : AppWidgetProvider() {
 
@@ -24,12 +25,14 @@ class NidaWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
         when (intent.action) {
             ACTION_TICK, Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_MY_PACKAGE_REPLACED -> refreshAll(context)
+            Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_MY_PACKAGE_REPLACED,
+            ACTION_EXACT_CHANGED -> refreshAll(context)
         }
     }
 
     companion object {
         private const val ACTION_TICK = "app.nida.TICK"
+        private const val ACTION_EXACT_CHANGED = "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
         private val nameIds = intArrayOf(R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4, R.id.n5)
         private val timeIds = intArrayOf(R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4, R.id.t5)
 
@@ -77,18 +80,16 @@ class NidaWidget : AppWidgetProvider() {
             val place = Places.here(context)
             val schedule = place?.let { Times.get(context, it) }
             val m = schedule?.let { Moment(it) }
-            if (place == null || m == null || !m.ready) {
+            if (place == null || m == null) {
                 v.setTextViewText(R.id.city, place?.name?.ifEmpty { null } ?: c.getString(R.string.app_name))
-                v.setTextViewText(R.id.left, c.getString(if (place == null) R.string.widget_no_place else R.string.widget_loading))
+                v.setTextViewText(R.id.left, c.getString(R.string.widget_no_place))
                 for (i in 0..5) {
                     v.setTextViewText(timeIds[i], "--:--")
                     v.setTextColor(nameIds[i], style.dim)
                     v.setTextColor(timeIds[i], style.dim)
                 }
-                if (place != null) FetchJob.schedule(context)
                 return v
             }
-            if (Times.needsFetch(context, place)) FetchJob.schedule(context)
 
             v.setTextViewText(R.id.city, place.name.ifEmpty { c.getString(R.string.current_location) })
             v.setTextViewText(R.id.left, c.getString(R.string.widget_left, Fmt.prayer(c, m.next), Fmt.left(c, m.nextAt - m.now)))
@@ -107,11 +108,20 @@ class NidaWidget : AppWidgetProvider() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
-        /** At the start of the next minute. RTC (not RTC_WAKEUP): while the phone sleeps, nothing runs. */
+        /** Whether the countdown may tick exactly on the minute (Android 12+ asks the user once). */
+        fun exact(context: Context) =
+            Build.VERSION.SDK_INT < 31 || context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
+
+        /**
+         * At the start of the next minute. RTC (not RTC_WAKEUP): while the phone sleeps nothing runs,
+         * and the widget catches up the moment the screen comes on.
+         */
         private fun scheduleTick(context: Context) {
             val now = System.currentTimeMillis()
-            val next = now - now % 60_000 + 60_000 + 500
-            context.getSystemService(AlarmManager::class.java).set(AlarmManager.RTC, next, tickIntent(context))
+            val next = now - now % 60_000 + 60_000 + 200
+            val am = context.getSystemService(AlarmManager::class.java)
+            if (exact(context)) am.setExact(AlarmManager.RTC, next, tickIntent(context))
+            else am.set(AlarmManager.RTC, next, tickIntent(context))
         }
 
         private fun cancelTick(context: Context) =
