@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- A dial: the passing of the day, and a hand pointing the way. -->
+    <path
+        android:pathData="M54,32 A22,22 0 1,1 53.99,32 Z"
+        android:strokeWidth="2.6"
+        android:strokeColor="@color/icon_fg" />
+    <path
+        android:pathData="M54,54 L54,40 M54,54 L64,60"
+        android:strokeWidth="2.6"
+        android:strokeColor="@color/icon_fg"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M54,50.5 A3.5,3.5 0 1,1 53.99,50.5 Z"
+        android:fillColor="@color/icon_fg" />
+</vector>

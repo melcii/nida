@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="prayers">
+        <item>İmsak</item>
+        <item>Güneş</item>
+        <item>Öğle</item>
+        <item>İkindi</item>
+        <item>Akşam</item>
+        <item>Yatsı</item>
+    </string-array>
+    <string-array name="prayers_short">
+        <item>İmsak</item>
+        <item>Güneş</item>
+        <item>Öğle</item>
+        <item>İkindi</item>
+        <item>Akşam</item>
+        <item>Yatsı</item>
+    </string-array>
+    <string-array name="hijri_months">
+        <item>Muharrem</item>
+        <item>Safer</item>
+        <item>Rebiülevvel</item>
+        <item>Rebiülahir</item>
+        <item>Cemaziyelevvel</item>
+        <item>Cemaziyelahir</item>
+        <item>Recep</item>
+        <item>Şaban</item>
+        <item>Ramazan</item>
+        <item>Şevval</item>
+        <item>Zilkade</item>
+        <item>Zilhicce</item>
+    </string-array>
+
+    <string name="left_hm">%1$d sa %2$d dk</string>
+    <string name="left_m">%d dk</string>
+    <string name="widget_left">%1$s vaktine %2$s</string>
+    <string name="next_in">%s vaktine</string>
+    <string name="at_time">saat %s</string>
+    <string name="since">%1$s vakti girdi · %2$s</string>
+    <string name="hijri_from_maghrib">%s · akşamla başladı</string>
+
+    <string name="current_location">Bulunduğun yer</string>
+    <string name="places">Yerler</string>
+    <string name="add_city">Şehir ekle</string>
+    <string name="search_hint">Şehir ara</string>
+    <string name="no_results">Şehir bulunamadı</string>
+    <string name="search_failed">Şu an aranamıyor. Bağlantını kontrol et.</string>
+    <string name="remove">Kaldır</string>
+    <string name="local_time">Yerel saat %s</string>
+
+    <string name="tab_simple">Sade</string>
+    <string name="tab_detailed">Ayrıntılı</string>
+    <string name="tab_qibla">Kıble</string>
+
+    <string name="prayer_times">Namaz vakitleri</string>
+    <string name="forbidden">Kerahat vakitleri</string>
+    <string name="forbidden_sunrise">Güneş doğarken</string>
+    <string name="forbidden_zenith">Güneş tepedeyken</string>
+    <string name="forbidden_sunset">Güneş batarken</string>
+    <string name="forbidden_note">Bu vakitlerde nafile namaz kılınmaz. Sınırlar yaklaşıktır.</string>
+    <string name="now">Şimdi</string>
+
+    <string name="night">Gece</string>
+    <string name="night_first">Gecenin ilk üçte biri</string>
+    <string name="night_second_a">İkinci üçte bir, gece yarısından önce</string>
+    <string name="night_second_b">İkinci üçte bir, gece yarısından sonra</string>
+    <string name="night_last">Gecenin son üçte biri</string>
+    <string name="night_passed">Gecenin %%%d kadarı geçti</string>
+    <string name="night_day">Bu gece, akşamdan imsaka</string>
+    <string name="night_range">%1$s – %2$s</string>
+    <string name="first_third_ends">İlk üçte bir biter</string>
+    <string name="midnight">Gece yarısı</string>
+    <string name="last_third">Son üçte bir başlar</string>
+
+    <string name="qibla_from_north">kuzeyden · Kâbe’ye %s km</string>
+    <string name="qibla_hint">Telefonu düz tut ve Kâbe en üste gelene kadar dön.</string>
+    <string name="qibla_facing">Kıbleye dönüksün</string>
+    <string name="qibla_no_compass">Bu telefonda pusula yok. Kuzeyden açıyı kullan.</string>
+    <string name="qibla_other_place">%s için kıble</string>
+
+    <string name="location_title">Neredesin?</string>
+    <string name="location_body">NİDÂ, namaz vakitlerini ve kıbleyi bulmak için konumunu kullanır. Konuma yalnızca uygulamayı açtığında ya da widget’taki şehre dokunduğunda bakar.</string>
+    <string name="allow_location">Konuma izin ver</string>
+    <string name="choose_city">Bunun yerine şehir seç</string>
+    <string name="loading">Namaz vakitleri alınıyor…</string>
+    <string name="offline">Namaz vakitleri servisine ulaşılamadı. Bağlantını kontrol et.</string>
+    <string name="locating">Konum bulunuyor…</string>
+    <string name="try_again">Tekrar dene</string>
+
+    <string name="settings">Ayarlar</string>
+    <string name="back">Geri</string>
+    <string name="menu">Yerler</string>
+    <string name="method">Hesaplama yöntemi</string>
+    <string name="method_mwl">Müslüman Dünya Birliği</string>
+    <string name="method_diyanet">Diyanet, Türkiye</string>
+    <string name="method_isna">ISNA, Kuzey Amerika</string>
+    <string name="method_egypt">Mısır Genel Araştırma Kurumu</string>
+    <string name="method_makkah">Ümmülkurâ, Mekke</string>
+    <string name="method_karachi">Karaçi Üniversitesi</string>
+    <string name="asr">İkindi</string>
+    <string name="asr_standard">Standart</string>
+    <string name="asr_hanafi">Hanefi</string>
+    <string name="asr_note">Hanefi’de ikindi, gölge boyun iki katı olunca, daha geç başlar.</string>
+    <string name="footer">%1$s · İkindi %2$s</string>
+
+    <string name="widget">Widget</string>
+    <string name="widget_style">Widget görünümü</string>
+    <string name="add_widget">Ana ekrana widget ekle</string>
+    <string name="widget_desc">Bugünün namaz vakitleri ve sıradaki vakte kalan süre.</string>
+    <string name="widget_no_place">Konum için dokun</string>
+    <string name="widget_loading">Güncelleniyor…</string>
+    <string name="background">Arka plan</string>
+    <string name="opacity">Opaklık</string>
+    <string name="opacity_value">%%%d</string>
+    <string name="text_color">Yazı</string>
+    <string name="text_auto">Otomatik</string>
+    <string name="text_light">Açık</string>
+    <string name="text_dark">Koyu</string>
+    <string name="done">Tamam</string>
+    <string name="widget_hint">Konumunu güncellemek için widget’taki şehre dokun. NİDÂ’yı açmak için başka bir yere dokun.</string>
+
+    <string name="language">Dil</string>
+    <string name="credits">Namaz vakitleri ve hicri tarihler AlAdhan API’sinden gelir. Şehir araması Open-Meteo ile yapılır. Konumun yalnızca NİDÂ’yı açtığında ya da widget’taki şehre dokunduğunda okunur ve sadece vakitleri ve şehir adını bulmak için bu servislere gönderilir.</string>
+</resources>
