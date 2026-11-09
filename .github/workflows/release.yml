@@ -1,4 +1,4 @@
-# Builds NİDÂ (APK for direct download, App Bundle for Google Play), signs both with the release key kept in repository secrets, and publishes it.
+# Builds NIDÂ (APK for direct download, App Bundle for Google Play), signs both with the release key kept in repository secrets, and publishes it.
 #   Push a tag like v0.2  -> a GitHub Release with the signed APK attached.
 #   Run it by hand        -> a signed APK as a downloadable build artifact (no release).
 name: Build and release
@@ -90,5 +90,5 @@ jobs:
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" "$APK" "$AAB" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "$APK" "$AAB" --title "NİDÂ $GITHUB_REF_NAME" --generate-notes
+            gh release create "$GITHUB_REF_NAME" "$APK" "$AAB" --title "NIDÂ $GITHUB_REF_NAME" --generate-notes
           fi

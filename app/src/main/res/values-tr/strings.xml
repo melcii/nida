@@ -78,7 +78,7 @@
     <string name="qibla_other_place">%s için kıble</string>
 
     <string name="location_title">Neredesin?</string>
-    <string name="location_body">NİDÂ, namaz vakitlerini ve kıbleyi bulmak için konumunu kullanır. Konuma yalnızca uygulamayı açtığında ya da widget’taki şehre dokunduğunda bakar ve konumun telefonundan hiç çıkmaz.</string>
+    <string name="location_body">NIDÂ, namaz vakitlerini ve kıbleyi bulmak için konumunu kullanır. Konuma yalnızca uygulamayı açtığında ya da widget’taki şehre dokunduğunda bakar ve konumun telefonundan hiç çıkmaz.</string>
     <string name="allow_location">Konuma izin ver</string>
     <string name="choose_city">Bunun yerine şehir seç</string>
     <string name="locating">Konum bulunuyor…</string>
@@ -113,10 +113,10 @@
     <string name="text_light">Açık</string>
     <string name="text_dark">Koyu</string>
     <string name="done">Tamam</string>
-    <string name="widget_hint">Konumunu güncellemek için widget’taki şehre dokun. NİDÂ’yı açmak için başka bir yere dokun.</string>
+    <string name="widget_hint">Konumunu güncellemek için widget’taki şehre dokun. NIDÂ’yı açmak için başka bir yere dokun.</string>
 
     <string name="language">Dil</string>
-    <string name="credits">Namaz vakitleri telefonunda hesaplanır, hicri tarihler Ümmülkurâ takvimine göredir. Şehir ve kasaba adları GeoNames’ten (CC BY 4.0) gelir ve uygulamanın içindedir. NİDÂ buluta yedek almaz ve yalnızca Ayarlar’da Namaz vakitlerini güncelle’ye dokunduğunda, AlAdhan’dan vakit indirmek için internete bağlanır.</string>
+    <string name="credits">Namaz vakitleri telefonunda hesaplanır, hicri tarihler Ümmülkurâ takvimine göredir. Şehir ve kasaba adları GeoNames’ten (CC BY 4.0) gelir ve uygulamanın içindedir. NIDÂ buluta yedek almaz ve yalnızca Ayarlar’da Namaz vakitlerini güncelle’ye dokunduğunda, AlAdhan’dan vakit indirmek için internete bağlanır.</string>
     <string name="tab_calendar">Takvim</string>
     <string name="prev_month">Önceki ay</string>
     <string name="next_month">Sonraki ay</string>
@@ -177,6 +177,6 @@
     <string name="update_running">Güncelleniyor…</string>
     <string name="update_failed">AlAdhan’a ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.</string>
     <string name="update_none">Önce bir şehir ekleyin veya konuma izin verin.</string>
-    <string name="update_note">NİDÂ yalnızca Güncelle’ye dokunduğunuzda, kayıtlı her yerin yaklaşık koordinatlarını (1 km kadar) hesaplama yönteminiz ve ikindi seçiminizle birlikte api.aladhan.com’a gönderir. Başka hiçbir şey gönderilmez. Yöntemi değiştirir veya yer değiştirirseniz tekrar Güncelle’ye dokunun; o zamana kadar vakitler telefonda hesaplanır.</string>
+    <string name="update_note">NIDÂ yalnızca Güncelle’ye dokunduğunuzda, kayıtlı her yerin yaklaşık koordinatlarını (1 km kadar) hesaplama yönteminiz ve ikindi seçiminizle birlikte api.aladhan.com’a gönderir. Başka hiçbir şey gönderilmez. Yöntemi değiştirir veya yer değiştirirseniz tekrar Güncelle’ye dokunun; o zamana kadar vakitler telefonda hesaplanır.</string>
     <string name="source_online">AlAdhan</string>
 </resources>

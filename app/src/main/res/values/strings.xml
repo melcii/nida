@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">NİDÂ</string>
+    <string name="app_name" translatable="false">NIDÂ</string>
     <string-array name="prayers">
         <item>Imsak</item>
         <item>Sunrise</item>
@@ -79,7 +79,7 @@
     <string name="qibla_other_place">The Qibla from %s</string>
 
     <string name="location_title">Where are you?</string>
-    <string name="location_body">NİDÂ uses your location to find prayer times and the Qibla. It checks only when you open the app or tap the city on the widget, and your location never leaves your phone.</string>
+    <string name="location_body">NIDÂ uses your location to find prayer times and the Qibla. It checks only when you open the app or tap the city on the widget, and your location never leaves your phone.</string>
     <string name="allow_location">Allow location</string>
     <string name="choose_city">Choose a city instead</string>
     <string name="locating">Locating…</string>
@@ -114,12 +114,12 @@
     <string name="text_light">Light</string>
     <string name="text_dark">Dark</string>
     <string name="done">Done</string>
-    <string name="widget_hint">Tap the city on the widget to update your location. Tap anywhere else to open NİDÂ.</string>
+    <string name="widget_hint">Tap the city on the widget to update your location. Tap anywhere else to open NIDÂ.</string>
 
     <string name="language">Language</string>
     <string name="lang_en" translatable="false">English</string>
     <string name="lang_tr" translatable="false">Türkçe</string>
-    <string name="credits">Prayer times are calculated on your phone, and Hijri dates follow the Umm al-Qura calendar. Town and city names come from GeoNames (CC BY 4.0) and are stored in the app. NİDÂ keeps no backups in the cloud, and it goes online only when you tap Update prayer times in Settings, to download times from AlAdhan.</string>
+    <string name="credits">Prayer times are calculated on your phone, and Hijri dates follow the Umm al-Qura calendar. Town and city names come from GeoNames (CC BY 4.0) and are stored in the app. NIDÂ keeps no backups in the cloud, and it goes online only when you tap Update prayer times in Settings, to download times from AlAdhan.</string>
     <string name="tab_calendar">Calendar</string>
     <string name="prev_month">Previous month</string>
     <string name="next_month">Next month</string>
@@ -180,6 +180,6 @@
     <string name="update_running">Updating…</string>
     <string name="update_failed">Couldn’t reach AlAdhan. Check your connection and try again.</string>
     <string name="update_none">Add a city or allow location first.</string>
-    <string name="update_note">Only when you tap Update, NİDÂ sends each saved place’s rough coordinates (to about 1 km), with your method and Asr choice, to api.aladhan.com. Nothing else is sent. If you change the method or move, tap Update again; until then, times are calculated on the phone.</string>
+    <string name="update_note">Only when you tap Update, NIDÂ sends each saved place’s rough coordinates (to about 1 km), with your method and Asr choice, to api.aladhan.com. Nothing else is sent. If you change the method or move, tap Update again; until then, times are calculated on the phone.</string>
     <string name="source_online">AlAdhan</string>
 </resources>

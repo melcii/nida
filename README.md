@@ -1,4 +1,4 @@
-# NİDÂ
+# NIDÂ
 
 A quiet prayer times app for Android, with a home screen widget and a Qibla compass.
 
@@ -14,7 +14,7 @@ A quiet prayer times app for Android, with a home screen widget and a Qibla comp
 
 ## Private by design
 
-- **Online only when you ask.** NİDÂ connects to the internet only when you tap *Update prayer times* in Settings. It then sends each saved place's coordinates, rounded to about 1 km, with your method and Asr choice, to [AlAdhan](https://aladhan.com/prayer-times-api). Nothing else is sent, and nothing runs in the background.
+- **Online only when you ask.** NIDÂ connects to the internet only when you tap *Update prayer times* in Settings. It then sends each saved place's coordinates, rounded to about 1 km, with your method and Asr choice, to [AlAdhan](https://aladhan.com/prayer-times-api). Nothing else is sent, and nothing runs in the background.
 - Without an update, or for days not downloaded, prayer times are calculated on the phone (the PrayTimes.org formulas, checked against AlAdhan in the tests).
 - Town names and city search use a list built into the app, so your location is never looked up online.
 - No cloud backup or device-to-device copy of the app's data.
