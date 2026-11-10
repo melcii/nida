@@ -18,7 +18,7 @@ data class WidgetStyle(val color: Int, val opacity: Int, val text: Int) {
 
     val textColor get() = if (lightText) 0xFFF4F5F2.toInt() else 0xFF1B1F1D.toInt()
 
-    /** The next time stands out in the accent green, or in full white/ink where green would clash. */
+    /** The current time stands out in the accent green, or in full white/ink where green would clash. */
     val highlight: Int
         get() = when {
             color == GREEN && opacity >= 40 -> textColor

@@ -182,4 +182,19 @@
     <string name="update_none">Add a city or allow location first.</string>
     <string name="update_note">Only when you tap Update, NIDÂ sends each saved place’s rough coordinates (to about 1 km), with your method and Asr choice, to api.aladhan.com. Nothing else is sent. If you change the method or move, tap Update again; until then, times are calculated on the phone.</string>
     <string name="source_online">AlAdhan</string>
+
+    <!-- Notifications -->
+    <string name="notify_section">Notifications</string>
+    <string name="notify_title">Prayer notifications</string>
+    <string name="notify_sub">A short note before each time and when it comes</string>
+    <string name="notify_blocked">Notifications are blocked. Tap to allow them.</string>
+    <string name="notify_before">Before the time</string>
+    <string name="notify_minutes">%d min</string>
+    <string name="notify_off">Off</string>
+    <string name="notify_at">At the time</string>
+    <string name="notify_which">Which times</string>
+    <string name="notify_none">None</string>
+    <string name="notif_channel">Prayer times</string>
+    <string name="notif_at">%s time</string>
+    <string name="ok">OK</string>
 </resources>

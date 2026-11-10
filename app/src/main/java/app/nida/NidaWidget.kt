@@ -26,7 +26,10 @@ class NidaWidget : AppWidgetProvider() {
         when (intent.action) {
             ACTION_TICK, Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_MY_PACKAGE_REPLACED,
-            ACTION_EXACT_CHANGED -> refreshAll(context)
+            ACTION_EXACT_CHANGED -> {
+                refreshAll(context)
+                if (intent.action != ACTION_TICK) Reminders.schedule(context)
+            }
         }
     }
 
@@ -96,9 +99,10 @@ class NidaWidget : AppWidgetProvider() {
             val day = m.day!!
             for (i in 0..5) {
                 v.setTextViewText(timeIds[i], Fmt.time(c, day.t[i], schedule.zone, short = true))
-                val color = if (i == m.next) style.highlight else style.dim
-                v.setTextColor(nameIds[i], color)
-                v.setTextColor(timeIds[i], if (i == m.next) style.highlight else style.textColor)
+                // The time we are in stands out; the countdown above already names the next one.
+                val now = i == m.previous
+                v.setTextColor(nameIds[i], if (now) style.highlight else style.dim)
+                v.setTextColor(timeIds[i], if (now) style.highlight else style.textColor)
             }
             return v
         }

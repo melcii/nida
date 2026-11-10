@@ -26,6 +26,9 @@ class Moment(val schedule: Schedule, val now: Long = System.currentTimeMillis())
 
     val previous get() = (nextIndex + 5) % 6
 
+    /** The time we are in now (before imsak, that is still last night's Isha). */
+    val current get() = previous
+
     /** The night runs from Maghrib to the next Fajr (imsak). */
     val nightStart: Long
         get() = if (now < day!!.imsak) yesterday?.maghrib ?: (day.maghrib - DAY) else day.maghrib

@@ -130,6 +130,16 @@ class MainActivity : Activity(), SensorEventListener {
         refreshData()
         tick()
         startCompass()
+        Reminders.schedule(this)
+        askForNotifications()
+    }
+
+    /** Once, after there are times to notify about: Android 13+ needs the user's OK to show notifications. */
+    private fun askForNotifications() {
+        if (Build.VERSION.SDK_INT < 33 || !Reminders.on(this) || Reminders.allowed(this)) return
+        if (Places.selected(this) == null || Store.prefs(this).getBoolean("asked_notify", false)) return
+        Store.prefs(this).edit().putBoolean("asked_notify", true).apply()
+        requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), ASK_NOTIFY)
     }
 
     override fun onPause() {
@@ -179,6 +189,7 @@ class MainActivity : Activity(), SensorEventListener {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == ASK_NOTIFY) return Reminders.schedule(this)
         if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
             Places.select(this, Places.HERE)
             render()
@@ -259,10 +270,14 @@ class MainActivity : Activity(), SensorEventListener {
 
         val times = find<LinearLayout>(R.id.timesGroup)
         times.removeAllViews()
+        // The time we are in is marked; the next one says how long until it starts.
         for (i in 0..5) {
-            val isNext = m.nextIndex == i
-            row(times, Fmt.prayer(this, i), Fmt.time(this, day.t[i], zone),
-                if (isNext) Fmt.left(this, m.nextAt - m.now) else null, isNext, day.t[i] <= m.now)
+            val note = when {
+                i == m.current -> getString(R.string.now)
+                m.nextIndex == i -> getString(R.string.compact_in, Fmt.left(this, m.nextAt - m.now))
+                else -> null
+            }
+            row(times, Fmt.prayer(this, i), Fmt.time(this, day.t[i], zone), note, i == m.current, day.t[i] <= m.now && i != m.current)
         }
 
         // The night: Maghrib to Fajr, in thirds.
@@ -387,10 +402,11 @@ class MainActivity : Activity(), SensorEventListener {
             listOf(getString(R.string.night_third_1) to f(1 / 3.0), getString(R.string.midnight_short) to f(0.5),
                 getString(R.string.night_third_2) to f(2 / 3.0), getString(R.string.seher) to f(5 / 6.0)),
         )
-        val upcoming = rows.flatten().map { it.second }.filter { it > now }.minOrNull()
+        // Like the widget: the prayer time we are in is the one in green.
+        val inNow = d.t[if (date == today.today) today.current else Day.ISHA]
         val group = find<LinearLayout>(R.id.compactTimes)
         group.removeAllViews()
-        rows.forEach { cellRow(group, it, zone, now, upcoming) }
+        rows.forEachIndexed { r, cells -> cellRow(group, cells, zone, now, if (r == 0) inNow else null) }
 
         find<TextView>(R.id.compactDate).text = Fmt.date(this, date)
         find<TextView>(R.id.compactHijri).text = Fmt.hijri(this, d)
@@ -419,8 +435,8 @@ class MainActivity : Activity(), SensorEventListener {
         find<View>(R.id.dayChart).contentDescription = "${p.name}, $range, $state"
     }
 
-    /** A row of equal cells, each a name over a time; the next one in the accent color. */
-    private fun cellRow(group: LinearLayout, cells: List<Pair<String, Long>>, zone: ZoneId, now: Long, upcoming: Long?) {
+    /** A row of equal cells, each a name over a time; [current] in the accent color. */
+    private fun cellRow(group: LinearLayout, cells: List<Pair<String, Long>>, zone: ZoneId, now: Long, current: Long?) {
         if (group.childCount > 0) group.addView(View(this).apply {
             setBackgroundColor(getColor(R.color.hairline))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply {
@@ -430,7 +446,7 @@ class MainActivity : Activity(), SensorEventListener {
         val medium = resources.getFont(R.font.inter_medium)
         val row = LinearLayout(this).apply { setPadding(dp(4), dp(10), dp(4), dp(10)) }
         cells.forEach { (label, at) ->
-            val next = at == upcoming
+            val lit = at == current
             val cell = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = android.view.Gravity.CENTER_HORIZONTAL
@@ -441,7 +457,7 @@ class MainActivity : Activity(), SensorEventListener {
                 textSize = 11f
                 maxLines = 1
                 ellipsize = android.text.TextUtils.TruncateAt.END
-                setTextColor(getColor(if (next) R.color.accent else R.color.muted))
+                setTextColor(getColor(if (lit) R.color.accent else R.color.muted))
             })
             cell.addView(TextView(this).apply {
                 text = Fmt.time(this@MainActivity, at, zone, short = true)
@@ -449,7 +465,7 @@ class MainActivity : Activity(), SensorEventListener {
                 textSize = 16f
                 typeface = medium
                 setPadding(0, dp(2), 0, 0)
-                setTextColor(getColor(when { next -> R.color.accent; at <= now -> R.color.muted; else -> R.color.ink }))
+                setTextColor(getColor(when { lit -> R.color.accent; at <= now -> R.color.muted; else -> R.color.ink }))
             })
             row.addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         }
@@ -574,10 +590,17 @@ class MainActivity : Activity(), SensorEventListener {
         val group = find<LinearLayout>(R.id.dayGroup)
         group.removeAllViews()
         val now = System.currentTimeMillis()
-        val next = Moment(schedule, now).let { m -> if (m.nextIndex < 6) day.t.indexOf(m.nextAt) else -1 }
+        val m = Moment(schedule, now)
+        val current = if (picked == today) m.current else -1
+        val next = if (picked == today && m.nextIndex < 6) m.nextIndex else -1
         for (i in 0..5) {
+            val note = when (i) {
+                current -> getString(R.string.now)
+                next -> getString(R.string.compact_in, Fmt.left(this, day.t[i] - now))
+                else -> null
+            }
             timeRow(group, Fmt.prayer(this, i), Fmt.time(this, day.t[i], schedule.zone),
-                if (i == next) Fmt.left(this, day.t[i] - now) else null, i == next, picked == today && day.t[i] <= now)
+                note, i == current, picked == today && day.t[i] <= now && i != current)
         }
     }
 
@@ -766,6 +789,7 @@ class MainActivity : Activity(), SensorEventListener {
         const val QIBLA = 2
         const val CALENDAR = 3
         const val COMPACT = 4
+        private const val ASK_NOTIFY = 2
         private const val LEAD = 30 * Moment.MIN
         private const val OLD_FIX = 6 * 3_600_000L
         private const val ROUGH_FIX = 5_000f

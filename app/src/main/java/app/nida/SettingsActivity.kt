@@ -1,6 +1,8 @@
 package app.nida
 
+import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -14,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
 
 /** Opens the system page where the user allows exact alarms for this app. */
@@ -60,6 +63,19 @@ class SettingsActivity : Activity() {
         }
         findViewById<View>(R.id.exactDivider).visibility = findViewById<View>(R.id.exactRow).visibility
         findViewById<View>(R.id.updateRow).setOnClickListener { update() }
+        findViewById<View>(R.id.notifyRow).setOnClickListener {
+            when {
+                Reminders.on(this) && !Reminders.allowed(this) -> askForNotifications()
+                else -> {
+                    Reminders.setOn(this, !Reminders.on(this))
+                    if (Reminders.on(this)) askForNotifications()
+                    notifyChanged()
+                }
+            }
+        }
+        findViewById<View>(R.id.atRow).setOnClickListener { Reminders.setAtTime(this, !Reminders.atTime(this)); notifyChanged() }
+        findViewById<View>(R.id.beforeRow).setOnClickListener { pickBefore() }
+        findViewById<View>(R.id.whichRow).setOnClickListener { pickWhich() }
 
         render()
         if (savedInstanceState == null) Motion.stagger(Motion.children(findViewById<ViewGroup>(R.id.page)), step = 60)
@@ -73,6 +89,7 @@ class SettingsActivity : Activity() {
             setTextColor(getColor(if (exact) R.color.muted else R.color.accent))
         }
         NidaWidget.refreshAll(applicationContext)
+        renderNotify()
     }
 
     private fun render() {
@@ -97,7 +114,77 @@ class SettingsActivity : Activity() {
         }
         segment(listOf(R.id.asrStandard to 0, R.id.asrHanafi to 1), Store.school(this))
         renderUpdate()
+        renderNotify()
         segment(listOf(R.id.langEn to Lang.EN, R.id.langTr to Lang.TR), Lang.current(this))
+    }
+
+    // ---- notifications ----
+
+    private fun renderNotify() {
+        val on = Reminders.on(this)
+        val blocked = on && !Reminders.allowed(this)
+        findViewById<Switch>(R.id.notifySwitch).isChecked = on && !blocked
+        findViewById<TextView>(R.id.notifySub).apply {
+            setText(if (blocked) R.string.notify_blocked else R.string.notify_sub)
+            setTextColor(getColor(if (blocked) R.color.accent else R.color.muted))
+        }
+        val before = Reminders.before(this)
+        findViewById<TextView>(R.id.beforeValue).text =
+            if (before == 0) getString(R.string.notify_off) else getString(R.string.notify_minutes, before)
+        findViewById<Switch>(R.id.atSwitch).isChecked = Reminders.atTime(this)
+        val names = resources.getStringArray(R.array.prayers)
+        val which = Reminders.which(this)
+        findViewById<TextView>(R.id.whichSub).text =
+            names.filterIndexed { i, _ -> which and (1 shl i) != 0 }.joinToString(", ").ifEmpty { getString(R.string.notify_none) }
+        listOf(R.id.beforeRow, R.id.atRow, R.id.whichRow).forEach {
+            findViewById<View>(it).apply { isEnabled = on; alpha = if (on) 1f else 0.4f }
+        }
+    }
+
+    private fun notifyChanged() {
+        renderNotify()
+        Reminders.schedule(this)
+    }
+
+    private fun askForNotifications() {
+        if (Reminders.allowed(this)) return
+        if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) || !Store.prefs(this).getBoolean("asked_notify", false)) {
+            Store.prefs(this).edit().putBoolean("asked_notify", true).apply()
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+        } else {
+            // Android won't ask again: send them to the app's notification settings.
+            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) = notifyChanged()
+
+    private fun pickBefore() {
+        val choices = Reminders.beforeChoices
+        val labels = choices.map { if (it == 0) getString(R.string.notify_off) else getString(R.string.notify_minutes, it) }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.notify_before)
+            .setSingleChoiceItems(labels, choices.indexOf(Reminders.before(this))) { d, i ->
+                Reminders.setBefore(this, choices[i])
+                notifyChanged()
+                d.dismiss()
+            }
+            .show()
+    }
+
+    private fun pickWhich() {
+        val names = resources.getStringArray(R.array.prayers)
+        var bits = Reminders.which(this)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.notify_which)
+            .setMultiChoiceItems(names, BooleanArray(6) { bits and (1 shl it) != 0 }) { _, i, on ->
+                bits = if (on) bits or (1 shl i) else bits and (1 shl i).inv()
+            }
+            .setPositiveButton(R.string.ok) { _, _ ->
+                Reminders.setWhich(this, bits)
+                notifyChanged()
+            }
+            .show()
     }
 
     private var updating = false
@@ -131,6 +218,7 @@ class SettingsActivity : Activity() {
                 updating = false
                 updateFailed = !ok
                 NidaWidget.refreshAll(applicationContext)
+                Reminders.schedule(applicationContext)
                 if (!isDestroyed) renderUpdate()
             }
         }
@@ -154,6 +242,7 @@ class SettingsActivity : Activity() {
     private fun changed() {
         render()
         NidaWidget.refreshAll(applicationContext)
+        Reminders.schedule(this)
     }
 
     private fun switchLanguage(lang: String) {

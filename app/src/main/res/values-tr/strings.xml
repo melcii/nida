@@ -179,4 +179,19 @@
     <string name="update_none">Önce bir şehir ekleyin veya konuma izin verin.</string>
     <string name="update_note">NIDÂ yalnızca Güncelle’ye dokunduğunuzda, kayıtlı her yerin yaklaşık koordinatlarını (1 km kadar) hesaplama yönteminiz ve ikindi seçiminizle birlikte api.aladhan.com’a gönderir. Başka hiçbir şey gönderilmez. Yöntemi değiştirir veya yer değiştirirseniz tekrar Güncelle’ye dokunun; o zamana kadar vakitler telefonda hesaplanır.</string>
     <string name="source_online">AlAdhan</string>
+
+    <!-- Bildirimler -->
+    <string name="notify_section">Bildirimler</string>
+    <string name="notify_title">Vakit bildirimleri</string>
+    <string name="notify_sub">Her vakitten önce ve vakit girince kısa bir bildirim</string>
+    <string name="notify_blocked">Bildirimler engelli. İzin vermek için dokunun.</string>
+    <string name="notify_before">Vakitten önce</string>
+    <string name="notify_minutes">%d dk</string>
+    <string name="notify_off">Kapalı</string>
+    <string name="notify_at">Vakit girince</string>
+    <string name="notify_which">Hangi vakitler</string>
+    <string name="notify_none">Hiçbiri</string>
+    <string name="notif_channel">Namaz vakitleri</string>
+    <string name="notif_at">%s vakti</string>
+    <string name="ok">Tamam</string>
 </resources>
