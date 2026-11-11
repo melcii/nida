@@ -4,7 +4,6 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -29,6 +28,7 @@ class WidgetStyleActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_widget_style)
+        Accent.paint(window.decorView)
         // Placing the widget succeeds even if this screen is just closed.
         val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
@@ -55,6 +55,14 @@ class WidgetStyleActivity : Activity() {
                 setOnClickListener { update(style.copy(color = color)) }
             })
         }
+        // Last: any colour you like.
+        swatches.addView(View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(8) }
+            contentDescription = getString(R.string.accent_custom)
+            setOnClickListener {
+                ColorPicker.show(this@WidgetStyleActivity, R.string.background_pick, style.color) { update(style.copy(color = it)) }
+            }
+        })
 
         findViewById<SeekBar>(R.id.opacity).apply {
             max = 100
@@ -101,13 +109,10 @@ class WidgetStyleActivity : Activity() {
         val swatches = findViewById<LinearLayout>(R.id.swatches)
         for (i in 0 until swatches.childCount) {
             val v = swatches.getChildAt(i)
-            val color = v.tag as Int
-            val selected = color == style.color
-            v.background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(color)
-                setStroke(dp(if (selected) 3 else 1), getColor(if (selected) R.color.accent else R.color.hairline))
-            }
+            val preset = v.tag as Int?
+            val custom = style.color !in WidgetStyle.swatches
+            val selected = if (preset == null) custom else preset == style.color
+            v.background = ColorPicker.swatch(this, preset ?: style.color.takeIf { custom }, selected)
             v.scaleX = if (selected) 1f else 0.86f
             v.scaleY = v.scaleX
         }

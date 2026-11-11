@@ -66,7 +66,8 @@ class NidaWidget : AppWidgetProvider() {
             v.setInt(R.id.bg, "setImageAlpha", style.alpha)
             v.setInt(R.id.pin, "setColorFilter", style.dim)
             v.setTextColor(R.id.city, style.textColor)
-            v.setTextColor(R.id.left, style.highlight)
+            val highlight = style.highlight(context)
+            v.setTextColor(R.id.left, highlight)
 
             v.setOnClickPendingIntent(R.id.root, PendingIntent.getActivity(
                 context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -101,8 +102,8 @@ class NidaWidget : AppWidgetProvider() {
                 v.setTextViewText(timeIds[i], Fmt.time(c, day.t[i], schedule.zone, short = true))
                 // The time we are in stands out; the countdown above already names the next one.
                 val now = i == m.previous
-                v.setTextColor(nameIds[i], if (now) style.highlight else style.dim)
-                v.setTextColor(timeIds[i], if (now) style.highlight else style.textColor)
+                v.setTextColor(nameIds[i], if (now) highlight else style.dim)
+                v.setTextColor(timeIds[i], if (now) highlight else style.textColor)
             }
             return v
         }

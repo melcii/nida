@@ -35,6 +35,7 @@ import kotlin.math.roundToInt
 class MainActivity : Activity(), SensorEventListener {
 
     private lateinit var createdLang: String
+    private lateinit var createdAccent: String
     private var tab = SIMPLE
     private val clock = Handler(Looper.getMainLooper())
     private var locating = false
@@ -79,7 +80,9 @@ class MainActivity : Activity(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Accent.paint(window.decorView)
         createdLang = Lang.current(this)
+        createdAccent = Accent.key(this)
         tab = Store.tab(this)
 
         val drawer = find<View>(R.id.drawer)
@@ -125,7 +128,7 @@ class MainActivity : Activity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         resumed = true
-        if (Lang.current(this) != createdLang) return recreate()
+        if (Lang.current(this) != createdLang || Accent.key(this) != createdAccent) return recreate()
         render()
         refreshData()
         tick()
@@ -457,7 +460,7 @@ class MainActivity : Activity(), SensorEventListener {
                 textSize = 11f
                 maxLines = 1
                 ellipsize = android.text.TextUtils.TruncateAt.END
-                setTextColor(getColor(if (lit) R.color.accent else R.color.muted))
+                setTextColor(if (lit) Accent.color(context) else getColor(R.color.muted))
             })
             cell.addView(TextView(this).apply {
                 text = Fmt.time(this@MainActivity, at, zone, short = true)
@@ -465,7 +468,7 @@ class MainActivity : Activity(), SensorEventListener {
                 textSize = 16f
                 typeface = medium
                 setPadding(0, dp(2), 0, 0)
-                setTextColor(getColor(when { lit -> R.color.accent; at <= now -> R.color.muted; else -> R.color.ink }))
+                setTextColor(when { lit -> Accent.color(context); at <= now -> getColor(R.color.muted); else -> getColor(R.color.ink) })
             })
             row.addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         }
@@ -481,6 +484,7 @@ class MainActivity : Activity(), SensorEventListener {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply { marginStart = dp(38) }
         })
         val r = LayoutInflater.from(this).inflate(R.layout.row_time, group, false)
+        Accent.paint(r)
         r.findViewById<View>(R.id.dot).visibility = if (highlight) View.VISIBLE else View.INVISIBLE
         r.findViewById<TextView>(R.id.name).apply { text = name; setTextColor(if (past) muted else ink) }
         r.findViewById<TextView>(R.id.time).apply { text = time; setTextColor(if (past) muted else ink) }
@@ -546,6 +550,7 @@ class MainActivity : Activity(), SensorEventListener {
             }
         }
         box.setBackgroundResource(if (warn) R.drawable.note_bg else 0)
+        if (warn) Accent.paint(box)
         text.setTextColor(getColor(if (warn) R.color.ink else R.color.muted))
         action.visibility = if (act == null) View.GONE else View.VISIBLE
         act?.let { (label, run) ->
@@ -618,7 +623,7 @@ class MainActivity : Activity(), SensorEventListener {
                 dial.facing && !heading.isNaN() -> R.string.qibla_facing
                 else -> R.string.qibla_hint
             })
-            setTextColor(getColor(if (dial.facing && !heading.isNaN()) R.color.accent else R.color.muted))
+            setTextColor(if (dial.facing && !heading.isNaN()) Accent.color(this@MainActivity) else getColor(R.color.muted))
         }
     }
 
@@ -748,9 +753,11 @@ class MainActivity : Activity(), SensorEventListener {
 
         fun add(place: Place?, id: String) {
             val r = inflater.inflate(R.layout.row_place, list, false)
+            Accent.paint(r)
             r.isSelected = id == selected
             val icon = r.findViewById<ImageView>(R.id.icon)
             icon.setImageResource(if (id == Places.HERE) R.drawable.ic_pin else R.drawable.ic_globe)
+            Accent.tint(icon, id == Places.HERE)
             r.findViewById<TextView>(R.id.name).text =
                 place?.name?.ifEmpty { null } ?: getString(R.string.current_location)
             r.findViewById<TextView>(R.id.detail).text = place?.let { nextLine(it) }

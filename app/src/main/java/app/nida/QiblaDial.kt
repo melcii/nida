@@ -16,7 +16,7 @@ import kotlin.math.min
  */
 class QiblaDial(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
     private val dp = resources.displayMetrics.density
-    private val accent = context.getColor(R.color.accent)
+    private val accent = Accent.color(context)
     private val ink = context.getColor(R.color.ink)
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 1.5f * dp; color = context.getColor(R.color.hairline) }
     private val tick = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeWidth = 1.5f * dp; strokeCap = Paint.Cap.ROUND; color = context.getColor(R.color.muted) }

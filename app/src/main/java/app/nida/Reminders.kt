@@ -107,7 +107,7 @@ object Reminders {
         )
         val n = Notification.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_bell)
-            .setColor(context.getColor(R.color.accent))
+            .setColor(Accent.light(context))
             .setContentTitle(title)
             .setContentText(Fmt.time(c, time, zone) + " · " + where)
             .setCategory(Notification.CATEGORY_REMINDER)

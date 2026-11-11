@@ -10,7 +10,8 @@ A quiet prayer times app for Android, with a home screen widget and a Qibla comp
 - **Hijri date:** today's date in the Islamic calendar, moving to the next day at Maghrib.
 - **Places:** your current location, plus any cities you add.
 - **Notifications:** a short note before each prayer time (20 minutes by default, or 5 to 60, or off) and another when it comes. Each one clears itself. Choose which times notify in Settings.
-- **Widget:** the city, the six times with the current one highlighted, and the time left until the next one. It can also be placed on the lock screen where Android allows it. You choose the background colour, how see-through it is, and the text colour.
+- **Widget:** the city, the six times with the current one highlighted, and the time left until the next one. It can also be placed on the lock screen where Android allows it. You choose the background colour (any colour you like), how see-through it is, and the text colour.
+- **Colour:** green, blue, plum, amber or a colour of your own, used across the app and on the widget. Your own colour is lightened or darkened just enough to stay readable in light and dark mode.
 - **Settings:** six common calculation methods, Standard or Hanafi Asr, English or Turkish, and **Update prayer times** to download the next two months from AlAdhan.
 
 ## Private by design

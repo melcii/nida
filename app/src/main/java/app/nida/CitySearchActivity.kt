@@ -29,6 +29,7 @@ class CitySearchActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
+        Accent.paint(window.decorView)
         if (Build.VERSION.SDK_INT >= 30) {
             window.setDecorFitsSystemWindows(false)
             findViewById<View>(R.id.page).setOnApplyWindowInsetsListener { v, insets ->
@@ -81,6 +82,7 @@ class CitySearchActivity : Activity() {
             r.findViewById<TextView>(R.id.detail).text = place.detail
             r.findViewById<ImageView>(R.id.remove).apply {
                 setImageResource(R.drawable.ic_plus)
+                Accent.tint(this, true)
                 setOnClickListener { pick(place) }
             }
             r.setOnClickListener { pick(place) }

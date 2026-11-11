@@ -39,15 +39,15 @@ class DayChart(context: Context, attrs: AttributeSet? = null) : View(context, at
         textSize = 10 * sp; textAlign = Paint.Align.CENTER; color = context.getColor(R.color.muted)
     }
     private val tick = Paint().apply { color = context.getColor(R.color.muted); strokeWidth = 1 * dp }
-    private val nowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.accent); strokeWidth = 2 * dp }
+    private val nowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Accent.color(context); strokeWidth = 2 * dp }
     private val tagText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         typeface = medium; textSize = 12 * sp; textAlign = Paint.Align.CENTER; color = context.getColor(R.color.paper)
     }
 
     private val ink = context.getColor(R.color.ink)
     private val muted = context.getColor(R.color.muted)
-    private val accent = context.getColor(R.color.accent)
-    private val soft = context.getColor(R.color.accent_soft)
+    private val accent = Accent.color(context)
+    private val soft = Accent.soft(context)
     private val hairline = context.getColor(R.color.hairline)
     private val forbidden = context.getColor(R.color.forbidden)
     private val forbiddenInk = context.getColor(R.color.forbidden_ink)

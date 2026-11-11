@@ -36,6 +36,7 @@ class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        Accent.paint(window.decorView)
         if (Build.VERSION.SDK_INT >= 30) {
             window.setDecorFitsSystemWindows(false)
             findViewById<View>(R.id.scroll).setOnApplyWindowInsetsListener { v, insets ->
@@ -86,7 +87,7 @@ class SettingsActivity : Activity() {
         val exact = NidaWidget.exact(this)
         findViewById<TextView>(R.id.exactState).apply {
             setText(if (exact) R.string.exact_on else R.string.exact_off)
-            setTextColor(getColor(if (exact) R.color.muted else R.color.accent))
+            setTextColor(if (exact) getColor(R.color.muted) else Accent.color(this@SettingsActivity))
         }
         NidaWidget.refreshAll(applicationContext)
         renderNotify()
@@ -103,6 +104,7 @@ class SettingsActivity : Activity() {
                 layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1.dp).apply { marginStart = 20.dp }
             })
             val row = inflater.inflate(R.layout.row_choice, group, false)
+            Accent.paint(row)
             row.findViewById<TextView>(R.id.name).text = getString(method.name)
             row.findViewById<View>(R.id.check).visibility = if (method.id == current) View.VISIBLE else View.INVISIBLE
             row.setOnClickListener {
@@ -115,6 +117,7 @@ class SettingsActivity : Activity() {
         segment(listOf(R.id.asrStandard to 0, R.id.asrHanafi to 1), Store.school(this))
         renderUpdate()
         renderNotify()
+        renderAccent()
         segment(listOf(R.id.langEn to Lang.EN, R.id.langTr to Lang.TR), Lang.current(this))
     }
 
@@ -126,7 +129,7 @@ class SettingsActivity : Activity() {
         findViewById<Switch>(R.id.notifySwitch).isChecked = on && !blocked
         findViewById<TextView>(R.id.notifySub).apply {
             setText(if (blocked) R.string.notify_blocked else R.string.notify_sub)
-            setTextColor(getColor(if (blocked) R.color.accent else R.color.muted))
+            setTextColor(if (blocked) Accent.color(this@SettingsActivity) else getColor(R.color.muted))
         }
         val before = Reminders.before(this)
         findViewById<TextView>(R.id.beforeValue).text =
@@ -162,20 +165,19 @@ class SettingsActivity : Activity() {
     private fun pickBefore() {
         val choices = Reminders.beforeChoices
         val labels = choices.map { if (it == 0) getString(R.string.notify_off) else getString(R.string.notify_minutes, it) }.toTypedArray()
-        AlertDialog.Builder(this)
+        Accent.show(AlertDialog.Builder(this)
             .setTitle(R.string.notify_before)
             .setSingleChoiceItems(labels, choices.indexOf(Reminders.before(this))) { d, i ->
                 Reminders.setBefore(this, choices[i])
                 notifyChanged()
                 d.dismiss()
-            }
-            .show()
+            })
     }
 
     private fun pickWhich() {
         val names = resources.getStringArray(R.array.prayers)
         var bits = Reminders.which(this)
-        AlertDialog.Builder(this)
+        Accent.show(AlertDialog.Builder(this)
             .setTitle(R.string.notify_which)
             .setMultiChoiceItems(names, BooleanArray(6) { bits and (1 shl it) != 0 }) { _, i, on ->
                 bits = if (on) bits or (1 shl i) else bits and (1 shl i).inv()
@@ -183,8 +185,45 @@ class SettingsActivity : Activity() {
             .setPositiveButton(R.string.ok) { _, _ ->
                 Reminders.setWhich(this, bits)
                 notifyChanged()
+            })
+    }
+
+    // ---- colour ----
+
+    /** The presets and a colour wheel for your own; the chosen one is ringed. */
+    private fun renderAccent() {
+        val row = findViewById<LinearLayout>(R.id.accentSwatches)
+        row.removeAllViews()
+        val choice = Accent.choice(this)
+        val night = Accent.night(this)
+        Accent.presets.forEachIndexed { i, p ->
+            row.addView(swatchView(if (night) p.dark else p.light, choice == i, getString(p.name)) { setAccent(i) })
+        }
+        val custom = Accent.custom(this)
+        val shown = if (night) Accent.forDark(custom) else Accent.forLight(custom)
+        row.addView(swatchView(if (choice == Accent.CUSTOM) shown else null, choice == Accent.CUSTOM, getString(R.string.accent_custom)) {
+            ColorPicker.show(this, R.string.accent_pick, custom, { if (night) Accent.forDark(it) else Accent.forLight(it) }) {
+                setAccent(Accent.CUSTOM, it)
             }
-            .show()
+        })
+        findViewById<TextView>(R.id.accentName).text =
+            Accent.presets.getOrNull(choice)?.let { getString(it.name) } ?: getString(R.string.accent_custom)
+    }
+
+    private fun swatchView(color: Int?, selected: Boolean, name: String, onClick: () -> Unit) = View(this).apply {
+        layoutParams = LinearLayout.LayoutParams(0, 40.dp, 1f).apply { marginEnd = 8.dp }
+        background = ColorPicker.swatch(context, color, selected)
+        scaleX = if (selected) 1f else 0.86f
+        scaleY = scaleX
+        contentDescription = name
+        setOnClickListener { onClick() }
+    }
+
+    private fun setAccent(choice: Int, custom: Int? = null) {
+        if (choice == Accent.choice(this) && custom == null) return
+        Accent.set(this, choice, custom)
+        NidaWidget.refreshAll(applicationContext)
+        recreate()
     }
 
     private var updating = false

@@ -38,12 +38,12 @@ class MonthView(private val context: Context, private val grid: LinearLayout, pr
                         val h = Hijri.of(d)
                         val ink = when {
                             picked -> context.getColor(R.color.paper)
-                            d == today -> context.getColor(R.color.accent)
+                            d == today -> Accent.color(context)
                             else -> context.getColor(R.color.ink)
                         }
                         addView(text(d.dayOfMonth.toString(), 15f, ink, bold = d == today || picked))
                         addView(text(h[0].toString(), 10f, if (picked) context.getColor(R.color.paper) else context.getColor(R.color.muted)))
-                        if (picked) setBackgroundResource(R.drawable.day_selected)
+                        if (picked) setBackgroundResource(R.drawable.day_selected).also { Accent.paint(this) }
                         else setBackgroundResource(R.drawable.day_bg)
                         setOnClickListener { onPick(d) }
                         contentDescription = d.toString()

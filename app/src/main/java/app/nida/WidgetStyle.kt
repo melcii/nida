@@ -18,13 +18,11 @@ data class WidgetStyle(val color: Int, val opacity: Int, val text: Int) {
 
     val textColor get() = if (lightText) 0xFFF4F5F2.toInt() else 0xFF1B1F1D.toInt()
 
-    /** The current time stands out in the accent green, or in full white/ink where green would clash. */
-    val highlight: Int
-        get() = when {
-            color == GREEN && opacity >= 40 -> textColor
-            lightText -> 0xFFA8DDC2.toInt()
-            else -> 0xFF2F6B55.toInt()
-        }
+    /** The current time stands out in the accent, or in full white/ink where the accent would clash. */
+    fun highlight(context: Context): Int {
+        val accent = if (lightText) Accent.brighter(Accent.dark(context)) else Accent.light(context)
+        return if (opacity >= 40 && Accent.contrast(accent, color or 0xFF000000.toInt()) < 2.2) textColor else accent
+    }
 
     val dim get() = (textColor and 0x00FFFFFF) or ((if (lightText) 0xB3 else 0x99) shl 24)
 

@@ -194,4 +194,18 @@
     <string name="notif_channel">Namaz vakitleri</string>
     <string name="notif_at">%s vakti</string>
     <string name="ok">Tamam</string>
+    <string name="accent_section">Renk</string>
+    <string name="accent_note">Uygulamada ve widget’ta kullanılır.</string>
+    <string name="accent_green">Yeşil</string>
+    <string name="accent_blue">Mavi</string>
+    <string name="accent_plum">Mor</string>
+    <string name="accent_amber">Kehribar</string>
+    <string name="accent_custom">Özel</string>
+    <string name="accent_pick">Renk seç</string>
+    <string name="background_pick">Arka plan rengi</string>
+    <string name="color_hue">Ton</string>
+    <string name="color_saturation">Doygunluk</string>
+    <string name="color_brightness">Parlaklık</string>
+    <string name="color_sample">İkindi  15:30</string>
+    <string name="cancel">İptal</string>
 </resources>

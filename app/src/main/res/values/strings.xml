@@ -197,4 +197,18 @@
     <string name="notif_channel">Prayer times</string>
     <string name="notif_at">%s time</string>
     <string name="ok">OK</string>
+    <string name="accent_section">Color</string>
+    <string name="accent_note">Used in the app and on the widget.</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_blue">Blue</string>
+    <string name="accent_plum">Plum</string>
+    <string name="accent_amber">Amber</string>
+    <string name="accent_custom">Custom</string>
+    <string name="accent_pick">Pick a color</string>
+    <string name="background_pick">Background color</string>
+    <string name="color_hue">Hue</string>
+    <string name="color_saturation">Saturation</string>
+    <string name="color_brightness">Brightness</string>
+    <string name="color_sample">Asr  3:30</string>
+    <string name="cancel">Cancel</string>
 </resources>

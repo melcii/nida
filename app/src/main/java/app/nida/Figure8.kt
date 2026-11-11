@@ -18,7 +18,7 @@ class Figure8(context: Context, attrs: AttributeSet? = null) : View(context, att
         style = Paint.Style.STROKE; strokeWidth = 2 * dp; strokeCap = Paint.Cap.ROUND
         color = context.getColor(R.color.hairline)
     }
-    private val phone = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.accent) }
+    private val phone = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Accent.color(context) }
     private val path = Path()
     private var phase = 0f
     private val anim = ValueAnimator.ofFloat(0f, (2 * Math.PI).toFloat()).apply {
