@@ -49,6 +49,43 @@
                     android:src="@drawable/ic_tune" />
             </LinearLayout>
 
+            <!-- NIDÂ is now part of Muhib -->
+            <LinearLayout
+                android:id="@+id/moved"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/note_bg"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    style="@style/Nida.RowText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="@string/moved_title" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:lineSpacingMultiplier="1.3"
+                    android:text="@string/moved_body"
+                    android:textColor="@color/muted"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/getMuhib"
+                    style="@style/Nida.Link"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/moved_action" />
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/heading"
                 android:layout_width="match_parent"

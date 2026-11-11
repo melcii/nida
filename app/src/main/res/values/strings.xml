@@ -211,4 +211,7 @@
     <string name="color_brightness">Brightness</string>
     <string name="color_sample">Asr  3:30</string>
     <string name="cancel">Cancel</string>
+    <string name="moved_title">NIDÂ is now part of Muhib</string>
+    <string name="moved_body">Prayer times, the Qibla, the calendar and the widgets carry on in Muhib, with more. NIDÂ won’t get further updates.</string>
+    <string name="moved_action">Get Muhib</string>
 </resources>

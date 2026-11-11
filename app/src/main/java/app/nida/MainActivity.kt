@@ -96,6 +96,9 @@ class MainActivity : Activity(), SensorEventListener {
             }
         }
 
+        find<View>(R.id.getMuhib).setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/melcii/muhib/releases/latest")))
+        }
         find<View>(R.id.menu).setOnClickListener { openDrawer() }
         find<View>(R.id.scrim).setOnClickListener { closeDrawer() }
         find<View>(R.id.openSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }

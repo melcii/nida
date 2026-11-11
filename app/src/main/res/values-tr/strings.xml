@@ -208,4 +208,7 @@
     <string name="color_brightness">Parlaklık</string>
     <string name="color_sample">İkindi  15:30</string>
     <string name="cancel">İptal</string>
+    <string name="moved_title">NIDÂ artık Muhib’in bir parçası</string>
+    <string name="moved_body">Namaz vakitleri, kıble, takvim ve widget’lar Muhib’de, daha fazlasıyla devam ediyor. NIDÂ artık güncellenmeyecek.</string>
+    <string name="moved_action">Muhib’i edin</string>
 </resources>

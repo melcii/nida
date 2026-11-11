@@ -1,5 +1,7 @@
 # NIDÂ
 
+> **NIDÂ is now part of [Muhib](https://github.com/melcii/muhib).** Everything here, from prayer times and the Qibla to the calendar, widgets and notifications, carries on there, with more. This repository is archived and won’t get further updates.
+
 A quiet prayer times app for Android, with a home screen widget and a Qibla compass.
 
 - **Simple view:** the next time and how long until it.
